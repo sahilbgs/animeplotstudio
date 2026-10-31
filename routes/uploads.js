@@ -36,22 +36,22 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter: accept images only
+// File filter: accept images and video clips (Midjourney, Kling, Sora, Runway, etc.)
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif|svg/;
+  const allowedTypes = /jpeg|jpg|png|webp|gif|svg|mp4|webm|mov/;
   const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
   const mime = file.mimetype;
-  if (allowedTypes.test(ext) || allowedTypes.test(mime)) {
+  if (allowedTypes.test(ext) || allowedTypes.test(mime) || mime.startsWith('video/') || mime.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files (PNG, JPG, JPEG, WEBP, GIF, SVG) are allowed!'), false);
+    cb(new Error('Only image and video files (PNG, JPG, WEBP, GIF, SVG, MP4, WEBM, MOV) are allowed!'), false);
   }
 };
 
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
-  limits: { fileSize: 25 * 1024 * 1024 } // 25 MB max per picture
+  limits: { fileSize: 100 * 1024 * 1024 } // 100 MB max per picture or video clip
 });
 
 // UPLOAD TO SCENE (Scene-wise pictures)
@@ -283,6 +283,78 @@ router.delete('/media/:id', async (req, res) => {
     res.json({ success: true, message: 'Media deleted successfully' });
   } catch (err) {
     console.error('Error deleting media:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// SAVE DIALOG-CAPTIONED IMAGE (from client-side canvas)
+router.post('/scene/:sceneId/save-dialog-image', async (req, res) => {
+  try {
+    const sceneId = req.params.sceneId;
+    const { imageBase64, caption, uploaded_by } = req.body;
+    if (!imageBase64) {
+      return res.status(400).json({ success: false, error: 'No image data provided' });
+    }
+
+    const sceneRes = await db.query(`
+      SELECT s.id, s.part_id, pt.project_id
+      FROM scenes s
+      JOIN parts pt ON pt.id = s.part_id
+      WHERE s.id = $1
+    `, [sceneId]);
+
+    if (sceneRes.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Scene not found' });
+    }
+    const { part_id, project_id } = sceneRes.rows[0];
+
+    // Decode base64
+    const matches = imageBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = '.png';
+    if (matches && matches.length === 3) {
+      buffer = Buffer.from(matches[2], 'base64');
+      if (matches[1].includes('jpeg') || matches[1].includes('jpg')) ext = '.jpg';
+    } else {
+      buffer = Buffer.from(imageBase64, 'base64');
+    }
+
+    const filename = `dialog_frame_${sceneId}_${Date.now()}${ext}`;
+    const filePath = path.join(scenesDir, filename);
+    fs.writeFileSync(filePath, buffer);
+    const fileUrl = `/uploads/scenes/${filename}`;
+
+    // Update scene primary_image
+    await db.query('UPDATE scenes SET primary_image = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [fileUrl, sceneId]);
+
+    // Save to media_uploads
+    const mediaRes = await db.query(`
+      INSERT INTO media_uploads (
+        project_id, part_id, scene_id, file_name, file_path, file_url,
+        file_size, mime_type, caption, asset_type, uploaded_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'dialog_frame', $10)
+      RETURNING *
+    `, [
+      project_id,
+      part_id,
+      sceneId,
+      filename,
+      filePath,
+      fileUrl,
+      buffer.length,
+      ext === '.png' ? 'image/png' : 'image/jpeg',
+      caption || 'Visual Dialog Frame',
+      uploaded_by || 'Creator'
+    ]);
+
+    res.json({
+      success: true,
+      file_url: fileUrl,
+      media: mediaRes.rows[0],
+      message: 'Dialog frame saved to scene successfully'
+    });
+  } catch (err) {
+    console.error('Error saving dialog image:', err);
     res.status(500).json({ success: false, error: err.message });
   }
 });

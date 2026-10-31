@@ -2,7 +2,7 @@
 // ANIME-PLOT STUDIO - SERVICE WORKER (PWA OFFLINE & ASSET CACHING)
 // ==============================================================================
 
-const CACHE_NAME = 'anime-plot-studio-v7';
+const CACHE_NAME = 'anime-plot-studio-v8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

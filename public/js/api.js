@@ -165,6 +165,14 @@ const API = {
     return this.request(`/upload/media/${mediaId}`, { method: 'DELETE' });
   },
 
+  async saveSceneDialogImage(sceneId, imageBase64, caption, uploadedBy) {
+    return this.request(`/upload/scene/${sceneId}/save-dialog-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, caption, uploaded_by: uploadedBy })
+    });
+  },
+
   // Team collaborators
   async getTeam() {
     return this.request('/team');

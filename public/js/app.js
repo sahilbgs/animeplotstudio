@@ -59,18 +59,27 @@ function checkAuthSession() {
       }
     } catch (e) {
       console.warn('Failed to parse saved auth session:', e);
-      state.isLoggedIn = false;
     }
-  } else {
-    // Check fallback user
+  }
+  if (!state.currentUser) {
     const legacyUser = localStorage.getItem('anime_studio_user');
     if (legacyUser) {
       try {
         state.currentUser = JSON.parse(legacyUser);
       } catch (e) {}
     }
-    state.isLoggedIn = false;
   }
+  if (!state.currentUser) {
+    state.currentUser = {
+      id: 1,
+      username: 'sahil',
+      display_name: 'Sahil',
+      role: 'Visual Producer & AI Artist',
+      avatar_color: '#4f46e5',
+      avatar_emoji: '🎨'
+    };
+  }
+  state.isLoggedIn = true;
   updateAuthUI();
 }
 
@@ -693,33 +702,44 @@ function renderScenesView() {
     card.className = 'scene-card';
     const primaryImgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
     const hasArt = scene.primary_image && !scene.primary_image.includes('shibuya_rain_establishing.svg');
+    const isVideo = primaryImgUrl && /\.(mp4|webm|mov)$/i.test(primaryImgUrl);
     const promptToCopy = scene.visual_prompt || scene.narrative_script || '';
 
     card.innerHTML = `
       <div class="scene-visual-wrap">
-        <img src="${primaryImgUrl}" class="scene-primary-img" alt="${escapeHtml(scene.title)}" onclick="openLightbox('${primaryImgUrl}', '${escapeJs(scene.title)}')">
+        ${isVideo ? `
+          <video controls src="${primaryImgUrl}" class="scene-primary-video" playsinline style="width: 100%; height: 220px; object-fit: contain; background: #000; border-radius: 12px; display: block;"></video>
+        ` : `
+          <img src="${primaryImgUrl}" class="scene-primary-img" alt="${escapeHtml(scene.title)}" onclick="openLightbox('${primaryImgUrl}', '${escapeJs(scene.title)}')">
+        `}
         <div class="scene-badge-row">
           <div class="scene-number-tag">SCENE ${scene.scene_number}</div>
-          ${hasArt ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">✨ Art Ready &amp; Uploaded</div>' : '<div class="scene-status-tag" style="background: rgba(245, 158, 11, 0.95); color: #fff;">⏳ Awaiting Art</div>'}
+          ${isVideo ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">🎬 Video Ready</div>' : (hasArt ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">✨ Art Ready</div>' : '<div class="scene-status-tag" style="background: rgba(245, 158, 11, 0.95); color: #fff;">⏳ Awaiting Art</div>')}
         </div>
         <div class="scene-upload-quick-overlay">
           <button class="quick-action-btn" onclick="openSceneUploadModal(event, ${scene.id})">
-            ${ICONS.upload} Upload Art
+            ${ICONS.upload} ${isVideo ? 'Change Video' : (hasArt ? 'Change Art' : 'Upload Art')}
           </button>
         </div>
       </div>
 
       <div class="scene-body">
-        <!-- Bunny Manager Quick Actions: Copy AI Prompt & Upload Art -->
-        <div class="scene-manager-bar">
-          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Stable Diffusion">
+        <!-- Producer & Creator Action Strip: Copy Prompt, Upload Art/Video, Add Dialogue -->
+        <div class="scene-manager-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Sora / Kling">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             <span>Copy AI Prompt</span>
           </button>
-          <button class="btn-upload-art-direct" onclick="openSceneUploadModal(event, ${scene.id})" title="Upload generated artwork directly">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <span>Upload Art</span>
+          <button class="btn-upload-art-direct" onclick="openSceneUploadModal(event, ${scene.id})" title="Upload generated picture or video clip">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+            <span>Upload Pic / Video</span>
           </button>
+          ${hasArt && !isVideo ? `
+            <button class="btn-dialog-art-direct" onclick="openDialogueStudio(${scene.id}, '${primaryImgUrl}', '${escapeJs(scene.title)}', '${escapeJs(scene.dialogue || '')}')" title="Add Dialogue / Subtitles on this Image and Download" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 700; border-radius: 10px; padding: 0.5rem 0.85rem; font-size: 0.82rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <span>💬 Add Dialogue &amp; Download</span>
+            </button>
+          ` : ''}
         </div>
 
         <div class="scene-title-row">
@@ -736,7 +756,7 @@ function renderScenesView() {
         <!-- AI Visual Prompt Box -->
         <div class="prompt-box-card">
           <div class="prompt-box-header">
-            <span class="prompt-label">Visual Generation Prompt</span>
+            <span class="prompt-label">AI Visual Prompt (Midjourney / Sora / Kling)</span>
             <button class="copy-prompt-btn" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})">
               ${ICONS.copy} Copy Prompt
             </button>
@@ -759,12 +779,12 @@ function renderScenesView() {
         <!-- Script Dialogue -->
         ${scene.dialogue ? `
           <div class="scene-dialogue-preview">
-            ${escapeHtml(scene.dialogue)}
+            <strong>Dialogue:</strong> ${escapeHtml(scene.dialogue)}
           </div>
         ` : ''}
 
         <div class="scene-footer">
-          <span>By: <strong>${escapeHtml(scene.created_by || 'Director Mewo')}</strong></span>
+          <span>By: <strong>${escapeHtml(scene.created_by || 'Story Writer')}</strong></span>
           <div class="scene-action-buttons">
             <button class="btn-icon" title="Edit Scene Details" onclick="openEditSceneModal(${scene.id})">
               ${ICONS.edit}
@@ -784,7 +804,7 @@ function renderScenesView() {
 // 1-Tap Copy Scene Prompt for Bunny (AI Art Producer)
 function copyScenePromptForBunny(promptText, sceneNum) {
   copyToClipboard(promptText, `Scene ${sceneNum} Prompt`);
-  showToast(`Scene ${sceneNum} Prompt copied! Bunny can paste in Midjourney/SD.`, 'success');
+  showToast(`Scene ${sceneNum} Prompt copied! Ready for Midjourney / Sora / Kling.`, 'success');
 }
 const copyScenePromptForSahil = copyScenePromptForBunny;
 
@@ -928,12 +948,24 @@ function renderTeamView() {
 
 // Switch Active Collaborator
 function switchCurrentUser(username) {
-  const member = state.team.find(t => t.username === username);
+  let member = state.team ? state.team.find(t => t.username.toLowerCase() === username.toLowerCase()) : null;
+  if (!member && (username === 'jiya' || username === 'mewo')) {
+    member = { id: 4, username: 'jiya', display_name: 'Jiya', role: 'Story Writer & Creator', avatar_color: '#db2777', avatar_emoji: '👑' };
+  } else if (!member && (username === 'sahil' || username === 'bunny')) {
+    member = { id: 1, username: 'sahil', display_name: 'Sahil', role: 'Visual Producer & AI Artist', avatar_color: '#4f46e5', avatar_emoji: '🎨' };
+  }
   if (member) {
     state.currentUser = member;
+    state.isLoggedIn = true;
     localStorage.setItem('anime_studio_user', JSON.stringify(member));
+    localStorage.setItem('anime_plot_auth', JSON.stringify({ user: member, logged_in_at: new Date().toISOString() }));
+    updateAuthUI();
     updateUserHeaderDisplay();
-    showToast(`Switched active collaborator to: ${member.display_name}`, 'success');
+    const btnJiya = document.getElementById('cqs-btn-jiya');
+    const btnSahil = document.getElementById('cqs-btn-sahil');
+    if (btnJiya) btnJiya.classList.toggle('active', member.username === 'jiya' || member.username === 'mewo');
+    if (btnSahil) btnSahil.classList.toggle('active', member.username === 'sahil' || member.username === 'bunny');
+    showToast(`Active Creator: ${member.display_name} (${member.role})`, 'success');
     renderTeamView();
   }
 }
@@ -1245,12 +1277,18 @@ async function submitAddFriend() {
 
 // Switch App Tabs (Landing, Storyboard, Reader, Prompt Studio, Team)
 function switchTab(tabName) {
-  // If user tries to open studio workspace without logging in, prompt login
-  if (tabName === 'storyboard' && !state.isLoggedIn) {
-    showToast('Please log in as Director Mewo or Manager Bunny to enter Studio', 'info');
-    openModal('login-modal');
-    return;
+  state.isLoggedIn = true;
+  if (!state.currentUser) {
+    state.currentUser = {
+      id: 1,
+      username: 'sahil',
+      display_name: 'Sahil',
+      role: 'Visual Producer & AI Artist',
+      avatar_color: '#4f46e5',
+      avatar_emoji: '🎨'
+    };
   }
+  updateAuthUI();
 
   state.activeTab = tabName;
   document.querySelectorAll('.nav-tab').forEach(t => {
@@ -1659,3 +1697,448 @@ function openMobileActionSheet() {
   openModal('mobile-action-sheet');
 }
 
+
+// ==============================================================================
+// DIALOGUE & CAPTION STUDIO CONTROLLER
+// ==============================================================================
+let dialogueStudio = {
+  sceneId: null,
+  imageUrl: '',
+  sceneTitle: '',
+  style: 'anime-yellow',
+  position: 'bottom',
+  fontSize: 32,
+  charName: '',
+  text: '',
+  img: null,
+  customX: null,
+  customY: null,
+  isDragging: false
+};
+
+function openDialogueStudio(sceneId, imageUrl, sceneTitle, defaultDialogue) {
+  dialogueStudio.sceneId = sceneId;
+  dialogueStudio.imageUrl = imageUrl;
+  dialogueStudio.sceneTitle = sceneTitle;
+  dialogueStudio.customX = null;
+  dialogueStudio.customY = null;
+  dialogueStudio.position = 'bottom';
+  dialogueStudio.style = 'anime-yellow';
+  dialogueStudio.fontSize = 32;
+
+  let char = '';
+  let txt = defaultDialogue || '';
+  const colonMatch = txt.match(/^([A-Za-z0-9_\s]{2,20})[:\-]\s*(.*)$/s);
+  if (colonMatch) {
+    char = colonMatch[1].trim();
+    txt = colonMatch[2].trim();
+  } else if (!char) {
+    char = state.currentUser ? state.currentUser.display_name.toUpperCase() : 'MEWO';
+  }
+
+  dialogueStudio.charName = char;
+  dialogueStudio.text = txt || 'I will never give up on this story!';
+
+  const nameInput = document.getElementById('dialogue-char-name');
+  const textInput = document.getElementById('dialogue-text-input');
+  const fontSlider = document.getElementById('dialogue-font-size-slider');
+  const fontVal = document.getElementById('dialogue-font-size-val');
+
+  if (nameInput) nameInput.value = dialogueStudio.charName;
+  if (textInput) textInput.value = dialogueStudio.text;
+  if (fontSlider) fontSlider.value = dialogueStudio.fontSize;
+  if (fontVal) fontVal.textContent = `${dialogueStudio.fontSize}px`;
+
+  updateDialogueStyleButtons();
+  updateDialoguePosButtons();
+
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    dialogueStudio.img = img;
+    const resBadge = document.getElementById('canvas-resolution-badge');
+    if (resBadge) resBadge.textContent = `${img.naturalWidth || img.width} x ${img.naturalHeight || img.height}`;
+    renderDialogueCanvas();
+  };
+  img.onerror = () => {
+    img.removeAttribute('crossorigin');
+    img.src = imageUrl;
+  };
+  img.src = imageUrl;
+
+  openModal('dialogue-studio-modal');
+  initDialogueCanvasDrag();
+}
+
+function setDialogueStyle(styleName) {
+  dialogueStudio.style = styleName;
+  updateDialogueStyleButtons();
+  renderDialogueCanvas();
+}
+
+function updateDialogueStyleButtons() {
+  document.querySelectorAll('#dialogue-style-buttons button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.style === dialogueStudio.style);
+  });
+}
+
+function setDialoguePosition(pos) {
+  dialogueStudio.position = pos;
+  dialogueStudio.customX = null;
+  dialogueStudio.customY = null;
+  updateDialoguePosButtons();
+  renderDialogueCanvas();
+}
+
+function updateDialoguePosButtons() {
+  ['bottom', 'center', 'top'].forEach(p => {
+    const el = document.getElementById(`pos-btn-${p}`);
+    if (el) el.classList.toggle('active', dialogueStudio.position === p && dialogueStudio.customX === null);
+  });
+}
+
+function onFontSizeSliderChange(val) {
+  dialogueStudio.fontSize = parseInt(val, 10);
+  const fontVal = document.getElementById('dialogue-font-size-val');
+  if (fontVal) fontVal.textContent = `${val}px`;
+  renderDialogueCanvas();
+}
+
+function renderDialogueCanvas() {
+  const canvas = document.getElementById('dialogue-canvas');
+  if (!canvas || !dialogueStudio.img) return;
+
+  const nameInput = document.getElementById('dialogue-char-name');
+  const textInput = document.getElementById('dialogue-text-input');
+  if (nameInput) dialogueStudio.charName = nameInput.value.trim();
+  if (textInput) dialogueStudio.text = textInput.value.trim();
+
+  const img = dialogueStudio.img;
+  const cw = img.naturalWidth || img.width || 1280;
+  const ch = img.naturalHeight || img.height || 720;
+  canvas.width = cw;
+  canvas.height = ch;
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, cw, ch);
+  ctx.drawImage(img, 0, 0, cw, ch);
+
+  if (!dialogueStudio.text && !dialogueStudio.charName) return;
+
+  const scale = Math.max(0.6, cw / 1280);
+  const baseFs = dialogueStudio.fontSize * scale;
+  const charFs = Math.max(14, baseFs * 0.75);
+
+  ctx.save();
+
+  function wrapLines(text, maxW, font) {
+    ctx.font = font;
+    const words = text.split(/\s+/);
+    const lines = [];
+    let curLine = words[0] || '';
+    for (let i = 1; i < words.length; i++) {
+      const w = words[i];
+      const testLine = curLine + ' ' + w;
+      if (ctx.measureText(testLine).width < maxW) {
+        curLine = testLine;
+      } else {
+        lines.push(curLine);
+        curLine = w;
+      }
+    }
+    if (curLine) lines.push(curLine);
+    return lines;
+  }
+
+  function drawRoundRect(x, y, w, h, r, fillStyle, strokeStyle, lineWidth) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fillStyle) {
+      ctx.fillStyle = fillStyle;
+      ctx.fill();
+    }
+    if (strokeStyle && lineWidth) {
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    }
+  }
+
+  const maxTextWidth = cw * 0.78;
+  const textFont = `bold ${baseFs}px 'Noto Sans', 'Segoe UI', -apple-system, sans-serif`;
+  const nameFont = `900 ${charFs}px 'Noto Sans', 'Segoe UI', -apple-system, sans-serif`;
+
+  const lines = wrapLines(dialogueStudio.text || '', maxTextWidth, textFont);
+  const lineHeight = baseFs * 1.35;
+  const textBlockHeight = lines.length * lineHeight;
+
+  let targetY;
+  if (dialogueStudio.customY !== null) {
+    targetY = dialogueStudio.customY;
+  } else if (dialogueStudio.position === 'top') {
+    targetY = ch * 0.15;
+  } else if (dialogueStudio.position === 'center') {
+    targetY = ch * 0.5 - textBlockHeight / 2;
+  } else {
+    targetY = ch * 0.82 - textBlockHeight;
+  }
+
+  let targetX = dialogueStudio.customX !== null ? dialogueStudio.customX : cw / 2;
+  const style = dialogueStudio.style;
+
+  if (style === 'manga-bubble') {
+    ctx.font = textFont;
+    let maxLw = 0;
+    lines.forEach(l => {
+      const w = ctx.measureText(l).width;
+      if (w > maxLw) maxLw = w;
+    });
+
+    const padX = baseFs * 1.2;
+    const padY = baseFs * 0.9;
+    const bubbleW = Math.max(cw * 0.35, maxLw + padX * 2);
+    const bubbleH = textBlockHeight + padY * 2 + (dialogueStudio.charName ? charFs * 1.4 : 0);
+    const bubbleX = targetX - bubbleW / 2;
+    const bubbleY = targetY;
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = 12 * scale;
+    drawRoundRect(bubbleX, bubbleY, bubbleW, bubbleH, 20 * scale, '#ffffff', '#111827', 4 * scale);
+    ctx.shadowBlur = 0;
+
+    ctx.beginPath();
+    ctx.moveTo(bubbleX + bubbleW * 0.3, bubbleY + bubbleH);
+    ctx.lineTo(bubbleX + bubbleW * 0.25, bubbleY + bubbleH + 22 * scale);
+    ctx.lineTo(bubbleX + bubbleW * 0.4, bubbleY + bubbleH);
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.lineWidth = 4 * scale;
+    ctx.strokeStyle = '#111827';
+    ctx.stroke();
+
+    let curY = bubbleY + padY + baseFs * 0.85;
+
+    if (dialogueStudio.charName) {
+      ctx.font = nameFont;
+      ctx.fillStyle = '#db2777';
+      ctx.textAlign = 'left';
+      ctx.fillText(dialogueStudio.charName.toUpperCase(), bubbleX + padX, curY);
+      curY += charFs * 1.35;
+    }
+
+    ctx.font = textFont;
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'left';
+    lines.forEach(line => {
+      ctx.fillText(line, bubbleX + padX, curY);
+      curY += lineHeight;
+    });
+
+  } else if (style === 'cinematic-box') {
+    const barH = textBlockHeight + 65 * scale;
+    const barY = ch - barH;
+    
+    const grad = ctx.createLinearGradient(0, barY, 0, ch);
+    grad.addColorStop(0, 'rgba(15, 23, 42, 0.0)');
+    grad.addColorStop(0.25, 'rgba(15, 23, 42, 0.85)');
+    grad.addColorStop(1, 'rgba(15, 23, 42, 0.98)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, barY, cw, barH);
+
+    ctx.fillStyle = '#db2777';
+    ctx.fillRect(0, barY + barH * 0.2, 8 * scale, barH * 0.6);
+
+    let startX = 40 * scale;
+    let textY = barY + 35 * scale;
+
+    if (dialogueStudio.charName) {
+      ctx.font = nameFont;
+      const nw = ctx.measureText(dialogueStudio.charName).width + 24 * scale;
+      drawRoundRect(startX, textY, nw, charFs * 1.6, 6 * scale, '#db2777');
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.fillText(dialogueStudio.charName.toUpperCase(), startX + nw / 2, textY + charFs * 1.15);
+      textY += charFs * 1.8;
+    }
+
+    ctx.font = textFont;
+    ctx.fillStyle = '#f8fafc';
+    ctx.textAlign = 'left';
+    lines.forEach(line => {
+      ctx.fillText(line, startX, textY + baseFs * 0.85);
+      textY += lineHeight;
+    });
+
+  } else {
+    let textColor = '#fff200';
+    let outlineColor = '#000000';
+    let glowColor = null;
+
+    if (style === 'anime-white') {
+      textColor = '#ffffff';
+    } else if (style === 'neon-cyan') {
+      textColor = '#00ffff';
+      glowColor = '#00ffff';
+    }
+
+    ctx.font = textFont;
+    let maxLw = 0;
+    lines.forEach(l => {
+      const w = ctx.measureText(l).width;
+      if (w > maxLw) maxLw = w;
+    });
+
+    if (dialogueStudio.charName) {
+      ctx.font = nameFont;
+      const nw = ctx.measureText(dialogueStudio.charName + ': ').width;
+      if (nw > maxLw) maxLw = nw;
+    }
+
+    const padX = baseFs * 1.1;
+    const padY = baseFs * 0.65;
+    const boxW = Math.min(cw * 0.92, maxLw + padX * 2);
+    const boxH = textBlockHeight + padY * 2 + (dialogueStudio.charName ? charFs * 1.3 : 0);
+    const boxX = targetX - boxW / 2;
+    const boxY = targetY;
+
+    drawRoundRect(boxX, boxY, boxW, boxH, 14 * scale, 'rgba(0, 0, 0, 0.65)', 'rgba(255, 255, 255, 0.12)', 1.5 * scale);
+
+    let curY = boxY + padY + (dialogueStudio.charName ? charFs * 0.9 : baseFs * 0.85);
+
+    if (dialogueStudio.charName) {
+      ctx.font = nameFont;
+      ctx.fillStyle = '#f472b6';
+      ctx.textAlign = 'center';
+      ctx.fillText(dialogueStudio.charName.toUpperCase(), targetX, curY);
+      curY += charFs * 1.35;
+    }
+
+    ctx.font = textFont;
+    ctx.textAlign = 'center';
+    const strokeW = Math.max(3, baseFs * 0.12);
+
+    lines.forEach(line => {
+      ctx.lineWidth = strokeW;
+      ctx.strokeStyle = outlineColor;
+      ctx.strokeText(line, targetX, curY);
+
+      if (glowColor) {
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 10 * scale;
+      }
+      ctx.fillStyle = textColor;
+      ctx.fillText(line, targetX, curY);
+      ctx.shadowBlur = 0;
+
+      curY += lineHeight;
+    });
+  }
+
+  ctx.restore();
+}
+
+function downloadDialogueImage() {
+  const canvas = document.getElementById('dialogue-canvas');
+  if (!canvas) return;
+
+  try {
+    const sceneNum = dialogueStudio.sceneId || 'frame';
+    canvas.toBlob(blob => {
+      if (!blob) {
+        showToast('Could not export canvas to image', 'error');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `scene_${sceneNum}_anime_dialogue.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded dialogue image successfully!', 'success');
+    }, 'image/png');
+  } catch (err) {
+    console.error('Download error:', err);
+    showToast('Download error: ' + err.message, 'error');
+  }
+}
+
+async function saveDialogueImageToScene() {
+  const canvas = document.getElementById('dialogue-canvas');
+  if (!canvas || !dialogueStudio.sceneId) return;
+
+  try {
+    showToast('Saving dialogue frame to Scene...', 'info');
+    const dataUrl = canvas.toDataURL('image/png');
+    const uploader = state.currentUser ? state.currentUser.display_name : 'Sahil';
+    const caption = dialogueStudio.text ? `Dialogue: ${dialogueStudio.text.slice(0, 50)}...` : 'Visual Dialogue Frame';
+
+    const res = await API.saveSceneDialogImage(dialogueStudio.sceneId, dataUrl, caption, uploader);
+
+    if (res.success) {
+      showToast('Dialogue frame saved to scene successfully!', 'success');
+      closeModal('dialogue-studio-modal');
+      if (state.activePart) {
+        await selectPart(state.activePart.id);
+      }
+    } else {
+      showToast(res.error || 'Failed to save dialogue frame', 'error');
+    }
+  } catch (err) {
+    console.error('Save to scene failed:', err);
+    showToast('Failed to save dialogue frame: ' + err.message, 'error');
+  }
+}
+
+function initDialogueCanvasDrag() {
+  const canvas = document.getElementById('dialogue-canvas');
+  if (!canvas || canvas._dragInited) return;
+  canvas._dragInited = true;
+
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  function onStart(e) {
+    dialogueStudio.isDragging = true;
+    const pt = getCanvasCoords(e);
+    dialogueStudio.customX = pt.x;
+    dialogueStudio.customY = pt.y;
+    renderDialogueCanvas();
+  }
+
+  function onMove(e) {
+    if (!dialogueStudio.isDragging) return;
+    e.preventDefault();
+    const pt = getCanvasCoords(e);
+    dialogueStudio.customX = pt.x;
+    dialogueStudio.customY = pt.y;
+    renderDialogueCanvas();
+  }
+
+  function onEnd() {
+    dialogueStudio.isDragging = false;
+  }
+
+  canvas.addEventListener('mousedown', onStart);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onEnd);
+
+  canvas.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('touchend', onEnd);
+}
