@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-  <title>ANIME PLOT STUDIO - Collaborative Story, Part &amp; Scene Visual Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ANIME PLOT STUDIO - Anime Visual Storyboard &amp; Scene Platform</title>
 
   <!-- PWA Web App Manifest -->
   <link rel="manifest" href="/manifest.json">
@@ -14,18 +14,19 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
   <link rel="mask-icon" href="/assets/icon-maskable-192x192.png" color="#4f46e5">
 
-  <!-- PWA Theme & Mobile Capabilities -->
-  <meta name="theme-color" content="#4f46e5">
+  <!-- Native iOS & Mobile Web App Settings -->
+  <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="AnimePlot">
+  <meta name="apple-touch-fullscreen" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="application-name" content="AnimePlot Studio">
   <meta name="msapplication-TileColor" content="#4f46e5">
   <meta name="msapplication-TileImage" content="/assets/icon-192x192.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=3">
 </head>
 <body>
 
@@ -945,14 +946,29 @@
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
+
+        <button class="mobile-action-row" onclick="closeModal('mobile-action-sheet'); exportScreenplay();">
+          <div class="mobile-action-icon" style="background: #e0f2fe; color: #0284c7;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" x2="12" y1="15" y2="3"/>
+            </svg>
+          </div>
+          <div class="mobile-action-text">
+            <div class="action-title">Export Screenplay Script</div>
+            <div class="action-desc">Download complete story as Markdown format</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js"></script>
-  <script src="/js/components.js"></script>
-  <script src="/js/app.js"></script>
+  <script src="/js/api.js?v=3"></script>
+  <script src="/js/components.js?v=3"></script>
+  <script src="/js/app.js?v=3"></script>
 
   <script>
     // Hook up switch team modal population
