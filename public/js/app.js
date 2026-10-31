@@ -711,6 +711,7 @@ async function renderScenesView() {
   state.scenes.forEach(scene => {
     const card = document.createElement('div');
     card.className = 'scene-card';
+    card.style.cssText = 'background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; overflow: hidden; margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.4);';
     const primaryImgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
     const hasArt = scene.primary_image && !scene.primary_image.includes('shibuya_rain_establishing.svg');
     const isVideo = primaryImgUrl && /\.(mp4|webm|mov)$/i.test(primaryImgUrl);
@@ -719,139 +720,108 @@ async function renderScenesView() {
     const sceneDialogues = dialoguesByScene[scene.id] || [];
 
     card.innerHTML = `
-      <div class="scene-visual-wrap">
-        ${isVideo ? `
-          <video controls src="${primaryImgUrl}" class="scene-primary-video" playsinline style="width: 100%; height: 220px; object-fit: contain; background: #000; border-radius: 12px; display: block;"></video>
-        ` : `
-          <img src="${primaryImgUrl}" class="scene-primary-img" alt="${escapeHtml(scene.title)}" onclick="openLightbox('${primaryImgUrl}', '${escapeJs(scene.title)}')">
-        `}
-        <div class="scene-badge-row">
-          <div class="scene-number-tag">SCENE ${scene.scene_number}</div>
-          ${isSubmitted ? `
-            <div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff; font-weight: 800; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);">✅ Submitted to Book</div>
-          ` : (isVideo ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">🎬 Video Ready</div>' : (hasArt ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">✨ Art Ready</div>' : '<div class="scene-status-tag" style="background: rgba(245, 158, 11, 0.95); color: #fff;">⏳ Awaiting Art</div>'))}
+      <!-- Scene Header Bar -->
+      <div style="padding: 1rem 1.5rem; background: rgba(0,0,0,0.3); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="background: linear-gradient(135deg, #db2777, #818cf8); color: #fff; font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 8px; letter-spacing: 0.05em;">
+            SCENE ${scene.scene_number}
+          </span>
+          <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #ffffff;">${escapeHtml(scene.title)}</h3>
         </div>
-        <div class="scene-upload-quick-overlay">
-          <button class="quick-action-btn" onclick="openSceneUploadModal(event, ${scene.id})">
-            ${ICONS.upload} ${isVideo ? 'Change Video' : (hasArt ? 'Change Art' : 'Upload Art')}
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          ${isSubmitted ? `
+            <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 999px;">
+              ✅ Submitted
+            </span>
+          ` : (hasArt || isVideo ? `
+            <span style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 999px;">
+              ✨ Art Uploaded
+            </span>
+          ` : `
+            <span style="background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.65rem; border-radius: 999px;">
+              ⏳ Awaiting Art
+            </span>
+          `)}
+          <button class="btn-icon" title="Edit Scene Title / Prompt" onclick="openEditSceneModal(${scene.id})" style="padding: 4px 8px; background: rgba(255,255,255,0.06); border-radius: 8px; color: #94a3b8;">
+            ${ICONS.edit}
           </button>
         </div>
       </div>
 
-      <div class="scene-body">
-        <!-- Producer & Creator Action Strip: Copy Prompt, Upload Art/Video, Add Dialogue, Submit Scene -->
-        <div class="scene-manager-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Sora / Kling">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-            <span>Copy AI Prompt</span>
-          </button>
-          <button class="btn-upload-art-direct" onclick="openSceneUploadModal(event, ${scene.id})" title="Upload generated picture or video clip">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-            <span>Upload Pic / Video</span>
-          </button>
-          ${hasArt && !isVideo ? `
-            <button class="btn-dialog-art-direct" onclick="openDialogueStudio(${scene.id}, '${primaryImgUrl}', '${escapeJs(scene.title)}', '${escapeJs(scene.dialogue || '')}')" title="Add Dialogue / Subtitles on this Image and Download" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 700; border-radius: 10px; padding: 0.5rem 0.85rem; font-size: 0.82rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span>💬 Dialogue Canvas</span>
-            </button>
-          ` : ''}
-
-          <!-- Submit Scene Action Button -->
-          ${isSubmitted ? `
-            <button onclick="submitSceneToBook(${scene.id}, 'Draft')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; font-weight: 700; border-radius: 10px; padding: 0.5rem 0.85rem; font-size: 0.82rem; cursor: pointer; margin-left: auto;">
-              ↩ Unsubmit (Edit)
-            </button>
-          ` : `
-            <button onclick="submitSceneToBook(${scene.id}, 'Submitted')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; border-radius: 10px; padding: 0.5rem 0.95rem; font-size: 0.82rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); margin-left: auto;">
-              ✅ Submit Scene
-            </button>
-          `}
-        </div>
-
-        <div class="scene-title-row">
-          <h3 class="scene-title-text">${escapeHtml(scene.title)}</h3>
-        </div>
-
-        <div class="scene-meta-chips">
-          <span class="meta-chip highlight">Location: ${escapeHtml(scene.location || 'Neo-Tokyo')}</span>
-          <span class="meta-chip">Time: ${escapeHtml(scene.time_of_day || 'Day')}</span>
-          <span class="meta-chip">Mood: ${escapeHtml(scene.mood || 'Cinematic')}</span>
-          <span class="meta-chip">Shot: ${escapeHtml(scene.camera_angle || 'Medium Shot')}</span>
-        </div>
-
-        <!-- AI Visual Prompt Box -->
-        <div class="prompt-box-card">
-          <div class="prompt-box-header">
-            <span class="prompt-label">AI Visual Prompt (Midjourney / Sora / Kling)</span>
-            <button class="copy-prompt-btn" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})">
-              ${ICONS.copy} Copy Prompt
-            </button>
-          </div>
-          <div class="prompt-text-display">${escapeHtml(promptToCopy)}</div>
-          ${scene.negative_prompt ? `
-            <div class="prompt-negative-text">
-              <strong>Negative:</strong> ${escapeHtml(scene.negative_prompt)}
+      <div style="padding: 1.5rem;">
+        <!-- 1. Jiya's Prompt Section (Clean, Big, Highlighted) -->
+        <div style="background: #090e17; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="font-size: 0.8rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.4rem;">
+              <span>✍️</span>
+              <span>Jiya's AI Visual Prompt</span>
+              <span style="font-size: 0.7rem; color: #64748b; font-weight: normal;">(Midjourney / Sora / Kling)</span>
             </div>
-          ` : ''}
-        </div>
-
-        <!-- Narrative Action Script -->
-        ${scene.narrative_script ? `
-          <div class="scene-story-preview">
-            ${escapeHtml(scene.narrative_script)}
-          </div>
-        ` : ''}
-
-        <!-- Character Dialogues Section -->
-        <div class="scene-dialogues-container" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1rem; margin-top: 1rem;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <div style="font-size: 0.82rem; font-weight: 800; color: #34d399; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
-              <span>💬</span>
-              <span>Character Dialogues (${sceneDialogues.length})</span>
-            </div>
-            <button class="btn btn-sm btn-secondary" onclick="openAddSceneDialogueModal(${scene.id})" style="font-size: 0.78rem; padding: 0.25rem 0.65rem; border-radius: 8px; font-weight: 700; color: #34d399; border-color: rgba(52,211,153,0.3);">
-              + Add Dialogue
+            <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; font-weight: 800; font-size: 0.82rem; padding: 0.45rem 0.9rem; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 0 15px rgba(2, 132, 199, 0.4);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              <span>📋 Copy Prompt</span>
             </button>
           </div>
+          <div style="font-size: 0.95rem; color: #e2e8f0; line-height: 1.6; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(0,0,0,0.4); padding: 0.85rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+            ${escapeHtml(promptToCopy || 'No visual prompt added yet. Jiya can write the AI prompt.')}
+          </div>
+        </div>
 
-          ${sceneDialogues.length > 0 ? `
-            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
-              ${sceneDialogues.map(d => `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
-                  <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
-                    <img src="${d.avatar_url || '/uploads/scenes/scene_library_discovery.jpg'}" alt="${escapeHtml(d.character_name)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ec4899; flex-shrink: 0;" onerror="this.src='/uploads/scenes/scene_library_discovery.jpg'">
-                    <div>
-                      <div style="font-size: 0.78rem; font-weight: 700; color: #f472b6;">
-                        ${escapeHtml(d.character_name)}
-                        ${d.character_role ? `<span style="color: #64748b; font-weight: 400; font-size: 0.72rem;"> • ${escapeHtml(d.character_role)}</span>` : ''}
-                      </div>
-                      <div style="font-size: 0.88rem; color: #e2e8f0; margin-top: 0.15rem; line-height: 1.4;">
-                        &ldquo;${escapeHtml(d.dialogue_text)}&rdquo;
-                      </div>
-                    </div>
+        <!-- 2. Scene Image Preview & 1-Click Upload -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; align-items: center;">
+          <!-- Visual Media Container -->
+          <div style="position: relative; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.08); aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center;">
+            ${isVideo ? `
+              <video controls src="${primaryImgUrl}" playsinline style="width: 100%; height: 100%; object-fit: contain;"></video>
+            ` : `
+              <img src="${primaryImgUrl}" alt="${escapeHtml(scene.title)}" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;" onclick="openLightbox('${primaryImgUrl}', '${escapeJs(scene.title)}')">
+            `}
+            ${!hasArt && !isVideo ? `
+              <div style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; padding: 1rem; text-align: center;">
+                <div style="font-size: 2rem; margin-bottom: 0.35rem;">🎨</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;">No Image Uploaded Yet</div>
+                <div style="font-size: 0.75rem; color: #64748b;">Copy Jiya's prompt above, generate art, and upload here!</div>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Direct Upload & Action Controls -->
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <!-- Hidden direct file input -->
+            <input type="file" id="direct-upload-input-${scene.id}" accept="image/*,video/*" style="display: none;" onchange="handleSceneDirectFileInput(${scene.id}, this)">
+            
+            <button onclick="document.getElementById('direct-upload-input-${scene.id}').click()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-size: 0.95rem; font-weight: 800; padding: 0.85rem 1.25rem; border-radius: 12px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.6rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); transition: transform 0.15s ease;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              <span>📷 ${hasArt || isVideo ? 'Replace Image / Video' : 'Upload Created Image'}</span>
+            </button>
+
+            <!-- Dialogue & Submit Quick Actions -->
+            <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+              <button onclick="openAddSceneDialogueModal(${scene.id})" style="flex: 1; min-width: 130px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #f472b6; font-weight: 700; padding: 0.6rem 0.85rem; border-radius: 10px; cursor: pointer; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                <span>💬 Dialogues (${sceneDialogues.length})</span>
+              </button>
+
+              ${isSubmitted ? `
+                <button onclick="submitSceneToBook(${scene.id}, 'Draft')" style="flex: 1; min-width: 130px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; font-weight: 700; padding: 0.6rem 0.85rem; border-radius: 10px; cursor: pointer; font-size: 0.82rem;">
+                  ↩ Re-open
+                </button>
+              ` : `
+                <button onclick="submitSceneToBook(${scene.id}, 'Submitted')" style="flex: 1; min-width: 130px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff; font-weight: 800; padding: 0.6rem 0.85rem; border-radius: 10px; border: none; cursor: pointer; font-size: 0.82rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
+                  <span>✅ Submit to Book</span>
+                </button>
+              `}
+            </div>
+
+            ${sceneDialogues.length > 0 ? `
+              <div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 0.65rem 0.85rem; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="font-size: 0.72rem; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 0.4rem;">Attached Dialogues:</div>
+                ${sceneDialogues.map(d => `
+                  <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.25rem;">
+                    <strong style="color: #f472b6;">${escapeHtml(d.character_name)}:</strong> &ldquo;${escapeHtml(d.dialogue_text)}&rdquo;
                   </div>
-                  <button onclick="deleteSceneDialogue(${scene.id}, ${d.id})" style="background: none; border: none; color: #64748b; cursor: pointer; font-size: 0.85rem; padding: 2px 6px;" title="Delete dialogue">
-                    &times;
-                  </button>
-                </div>
-              `).join('')}
-            </div>
-          ` : `
-            <div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">
-              No dialogues attached yet. Click &ldquo;+ Add Dialogue&rdquo; to select a character and add lines for this scene.
-            </div>
-          `}
-        </div>
-
-        <div class="scene-footer" style="margin-top: 1rem;">
-          <span>By: <strong>${escapeHtml(scene.created_by || 'Story Writer')}</strong></span>
-          <div class="scene-action-buttons">
-            <button class="btn-icon" title="Edit Scene Details" onclick="openEditSceneModal(${scene.id})">
-              ${ICONS.edit}
-            </button>
-            <button class="btn-icon danger" title="Delete Scene" onclick="confirmDeleteScene(${scene.id})">
-              ${ICONS.trash}
-            </button>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -859,6 +829,43 @@ async function renderScenesView() {
 
     container.appendChild(card);
   });
+}
+
+// 1-Click Direct Scene File Upload Handler
+async function handleSceneDirectFileInput(sceneId, inputElement) {
+  const file = inputElement.files && inputElement.files[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('images', file);
+  const uName = (state.currentUser && (state.currentUser.display_name || state.currentUser.username)) || 'Sahil';
+  formData.append('uploaded_by', uName);
+  formData.append('set_primary', 'true');
+
+  showToast(`Uploading ${file.name} for Scene ${sceneId}...`, 'info');
+
+  try {
+    const res = await fetch(`/api/upload/scene/${sceneId}`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || 'Upload failed');
+    }
+
+    showToast('✨ Image uploaded successfully! Scene updated.', 'success');
+    // Reload scenes for active part
+    if (state.activePart) {
+      await loadPartScenes(state.activePart.id);
+    } else {
+      await loadPartScenes(4);
+    }
+  } catch (err) {
+    showToast('Upload failed: ' + err.message, 'error');
+  } finally {
+    inputElement.value = '';
+  }
 }
 
 // 1-Tap Copy Scene Prompt

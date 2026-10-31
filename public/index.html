@@ -239,207 +239,38 @@
     </div>
 
     <!-- =========================================================================
-         TAB 1: STORYBOARD & SCENE STUDIO (STUDIO WORKSPACE)
+         TAB 1: SCENE STUDIO WORKSPACE (SIMPLE, TWO-USER WORKFLOW)
          ========================================================================= -->
     <div id="view-storyboard" style="display: none;">
-
-      <!-- 3-Tier Hierarchy Pipeline Stepper: 1. STORY -> 2. PART -> 3. SCENE -->
-      <section class="workflow-stepper-panel glass-panel">
-        <div class="stepper-track">
-          <!-- Step 1: Story -->
-          <div class="step-card active" id="stepper-step-1" onclick="scrollToSection('section-step-1-story')" title="Click to jump to Step 1: Anime Story">
-            <div class="step-num-pill">STEP 1</div>
-            <div class="step-content">
-              <div class="step-heading">Create &amp; Select Story</div>
-              <div class="step-subtext" id="stepper-story-name">Loading Story...</div>
-            </div>
-            <button class="step-action-chip" onclick="event.stopPropagation(); openCreateStoryModal();" title="Create New Story">
-              + Create Story
-            </button>
-          </div>
-
-          <div class="stepper-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-
-          <!-- Step 2: Part -->
-          <div class="step-card" id="stepper-step-2" onclick="scrollToSection('section-step-2-parts')" title="Click to jump to Step 2: Story Parts">
-            <div class="step-num-pill">STEP 2</div>
-            <div class="step-content">
-              <div class="step-heading">Story Part (1, 2, 3...)</div>
-              <div class="step-subtext" id="stepper-part-name">Select or Create Part</div>
-            </div>
-            <button class="step-action-chip" onclick="event.stopPropagation(); openModal('new-part-modal');" title="Create Next Part">
-              + New Part
-            </button>
-          </div>
-
-          <div class="stepper-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </div>
-
-          <!-- Step 3: Scene (Seen) -->
-          <div class="step-card" id="stepper-step-3" onclick="scrollToSection('section-step-3-scenes')" title="Click to jump to Step 3: Visual Scenes">
-            <div class="step-num-pill">STEP 3</div>
-            <div class="step-content">
-              <div class="step-heading">Visual Scene (Seen)</div>
-              <div class="step-subtext" id="stepper-scene-name">Prompts &amp; Frames</div>
-            </div>
-            <button class="step-action-chip" onclick="event.stopPropagation(); openCreateSceneModal();" title="Add Scene to Part">
-              + New Scene
-            </button>
-          </div>
-        </div>
-      </section>
-      
-      <!-- =========================================================================
-           TIER 1: ANIME STORIES & PLOTS (STEP 1)
-           ========================================================================= -->
-      <section class="section-container" id="section-step-1-story">
-        <div class="section-header-row">
+      <!-- Clean, focused Story & Scenes Header -->
+      <section class="section-container" style="margin-top: 1.25rem;">
+        <div class="glass-panel" style="padding: 1.25rem 1.75rem; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.1);">
           <div>
-            <div class="section-step-badge">STEP 1 OF 3 • ANIME PLOT</div>
-            <h2 class="section-title">Anime Stories &amp; Series Plots</h2>
-            <p class="section-desc">Sub se pehle apni Anime Story / Plot create karein. Phir Part aur Scene create karein.</p>
-          </div>
-          <button class="btn btn-primary btn-create-story" onclick="openCreateStoryModal()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Create New Story
-          </button>
-        </div>
-
-        <!-- Stories Carousel (Cards for all Anime Stories + "+ Create New Story" Card) -->
-        <div class="stories-carousel" id="stories-carousel">
-          <!-- Populated by JavaScript -->
-        </div>
-
-        <!-- Active Story Hero Banner -->
-        <div class="glass-panel project-banner" style="margin-top: 1rem;">
-          <div class="project-cover-container" onclick="openStoryPosterUploadModal()" title="Click to change Story Poster">
-            <img id="project-cover-img" class="project-cover-img" src="/uploads/projects/neon_chronos_poster.svg" alt="Anime Poster">
-            <div class="cover-upload-badge">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/>
-              </svg>
-              Change Poster
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.75rem; font-weight: 800; color: #ec4899; text-transform: uppercase; letter-spacing: 0.08em;">ANIME STORY</span>
+              <span id="current-story-badge" style="font-size: 0.72rem; background: rgba(236,72,153,0.15); color: #f472b6; padding: 0.15rem 0.6rem; border-radius: 999px; font-weight: 700;">Active</span>
             </div>
+            <h1 id="workspace-story-title" style="font-size: 1.85rem; font-weight: 900; color: #ffffff; margin: 0;">THE LAST PAGE</h1>
           </div>
 
-          <div class="project-details">
-            <div class="project-meta-badges">
-              <span class="meta-badge badge-db">Studio Archive</span>
-              <span class="meta-badge badge-genre" id="project-genre-badge">Cyberpunk Action</span>
-              <span class="meta-badge badge-style" id="project-style-badge">Makoto Shinkai x Ufotable</span>
-              <span class="meta-badge badge-status" id="project-status-badge">In Production</span>
-            </div>
-
-            <h1 class="project-title" id="project-title">Loading Anime Story...</h1>
-            <div class="project-tagline" id="project-tagline"></div>
-            <p class="project-synopsis" id="project-synopsis"></p>
-
-            <!-- Story Actions Toolbar -->
-            <div class="story-actions-toolbar">
-              <button class="btn btn-sm btn-primary" onclick="openCreateStoryModal()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                + Create Another Story
-              </button>
-              <button class="btn btn-sm btn-secondary" onclick="openEditStoryModal()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                </svg>
-                Edit Story
-              </button>
-              <button class="btn btn-sm btn-secondary" onclick="openStoryPosterUploadModal()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
-                </svg>
-                Upload Poster
-              </button>
-              <button class="btn btn-sm btn-secondary" id="btn-toggle-publish-story" onclick="toggleCurrentStoryPublish()" title="Toggle showing this story on the Public Landing Showcase">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-                <span id="btn-toggle-publish-label">Show on Landing</span>
-              </button>
-              <button class="btn btn-sm btn-secondary danger-hover" onclick="confirmDeleteStory()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                </svg>
-                Delete Story
-              </button>
-            </div>
-          </div>
-
-          <div class="project-quick-stats">
-            <div class="stat-box">
-              <div class="stat-number" id="stat-parts-count">0</div>
-              <div class="stat-label">Story Parts</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-number" id="stat-scenes-count">0</div>
-              <div class="stat-label">Total Scenes</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- =========================================================================
-           TIER 2: STORY PARTS & EPISODES (STEP 2: PART)
-           ========================================================================= -->
-      <section class="section-container parts-bar-wrapper" id="section-step-2-parts" style="margin-top: 2rem;">
-        <div class="section-header-row">
-          <div>
-            <div class="section-step-badge">STEP 2 OF 3 • PARTS &amp; EPISODES</div>
-            <h2 class="section-title">Story Parts &amp; Episodes (Part 1, 2, 3...)</h2>
-            <p class="section-desc">Create and organize story parts/episodes under this Anime Story.</p>
-          </div>
-          <button class="btn btn-primary" onclick="openModal('new-part-modal')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Create Next Part
-          </button>
-        </div>
-
-        <div class="parts-carousel" id="parts-carousel">
-          <!-- Populated by JavaScript -->
-        </div>
-      </section>
-
-      <!-- =========================================================================
-           TIER 3: VISUAL SCENES (STEP 3: SEEN / SCENE)
-           ========================================================================= -->
-      <section class="section-container" id="section-step-3-scenes" style="margin-top: 2rem;">
-        <div class="active-part-banner" id="active-part-banner">
-          <div class="active-part-info">
-            <div class="section-step-badge" style="margin-bottom: 0.35rem;">STEP 3 OF 3 • VISUAL SCENES (SEEN)</div>
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-              <div class="active-part-num-badge" id="active-part-num">PART 1</div>
-              <div>
-                <div class="active-part-title-text" id="active-part-heading">Part Title</div>
-                <div class="active-part-desc" id="active-part-desc">Part Summary</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="scene-toolbar">
-            <button class="btn btn-primary" onclick="openCreateSceneModal()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Add New Scene
+          <!-- Quick Actions: + Write Scene (For Jiya), Refresh -->
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="reloadCurrentScenes()" style="border-radius: 10px;" title="Refresh scenes from server">
+              🔄 Refresh
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="openCreateSceneModal()" style="border-radius: 10px; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); font-weight: 700;">
+              + Write New Scene Prompt
             </button>
           </div>
         </div>
-
-        <!-- Scenes Grid Layout -->
-        <div class="scenes-grid" id="scenes-grid">
-          <!-- Scene Cards populated by JavaScript -->
-        </div>
       </section>
 
+      <!-- Main Scenes List: Scene-wise cards for Prompt Copy & Image Upload -->
+      <section class="section-container" style="margin-top: 1.5rem; margin-bottom: 4rem;">
+        <div id="scenes-grid" class="scenes-grid" style="display: flex; flex-direction: column; gap: 2rem; max-width: 900px; margin: 0 auto;">
+          <!-- Dynamically populated scene cards -->
+        </div>
+      </section>
     </div>
 
     <!-- TAB: CHARACTERS VIEW (SCREEN 7) -->

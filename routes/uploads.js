@@ -58,9 +58,9 @@ const upload = multer({
 router.post('/scene/:sceneId', upload.array('images', 10), async (req, res) => {
   try {
     const sceneId = req.params.sceneId;
-    const uploadedBy = req.body.uploaded_by || 'Bunny';
+    const uploadedBy = req.body.uploaded_by || 'Sahil';
     const caption = req.body.caption || '';
-    const setPrimary = req.body.set_primary === 'true';
+    const setPrimary = req.body.set_primary !== 'false';
 
     // Verify scene and get part_id & project_id
     const sceneRes = await db.query(`
@@ -110,9 +110,14 @@ router.post('/scene/:sceneId', upload.array('images', 10), async (req, res) => {
       savedMedia.push(mediaRes.rows[0]);
     }
 
-    // If scene currently has no primary image, or user checked set_primary, set it!
+    // Always update scene primary_image and mark status as Art Ready
     if (!primary_image || setPrimary) {
-      await db.query('UPDATE scenes SET primary_image = $1 WHERE id = $2', [firstFileUrl, sceneId]);
+      await db.query(`
+        UPDATE scenes 
+        SET primary_image = $1, 
+            status = CASE WHEN status = 'Submitted' THEN 'Submitted' ELSE 'Art Ready' END
+        WHERE id = $2
+      `, [firstFileUrl, sceneId]);
     }
 
     res.json({
