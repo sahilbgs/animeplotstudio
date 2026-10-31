@@ -42,35 +42,25 @@
 
     <!-- Center Navigation Tabs (Desktop) -->
     <nav class="header-center">
-      <button class="nav-tab active" data-tab="storyboard">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
-          <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/>
-        </svg>
-        Storyboard
+      <button class="nav-tab active" data-tab="landing" onclick="switchTab('landing')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Showcase
       </button>
-      <button class="nav-tab" data-tab="reader">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-          <path d="M6 6h10"/><path d="M6 10h10"/>
-        </svg>
+      <button class="nav-tab" data-tab="storyboard" onclick="switchTab('storyboard')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/></svg>
+        Studio Workspace
+      </button>
+      <button class="nav-tab" data-tab="reader" onclick="switchTab('reader')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
         Screenplay Reader
       </button>
-      <button class="nav-tab" data-tab="prompts">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/>
-          <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/>
-        </svg>
+      <button class="nav-tab" data-tab="prompts" onclick="switchTab('prompts')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/></svg>
         Prompt Studio
       </button>
-      <button class="nav-tab" data-tab="team">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-          <circle cx="9" cy="7" r="4"/>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        Team &amp; Friends
+      <button class="nav-tab" data-tab="team" onclick="switchTab('team')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Founders &amp; Team
       </button>
     </nav>
 
@@ -83,37 +73,39 @@
       </button>
 
       <!-- Story Selector in Header -->
-      <div class="header-story-selector-wrap" title="Current Anime Story / Plot">
+      <div class="header-story-selector-wrap" id="header-story-selector-wrap" title="Current Anime Story / Plot">
         <select id="header-story-dropdown" class="header-story-dropdown" onchange="onHeaderStorySelect(this.value)">
           <!-- Populated by JavaScript -->
         </select>
       </div>
 
       <!-- Prominent "+ Create Story" Button -->
-      <button class="btn btn-primary btn-create-story" onclick="openCreateStoryModal()" title="Create New Anime Story (Step 1)">
+      <button class="btn btn-primary btn-create-story" id="header-create-story-btn" onclick="openCreateStoryModal()" title="Create New Anime Story (Step 1)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        <span>Create Story</span>
+        <span>+ Story</span>
       </button>
 
-      <button class="btn btn-secondary header-export-btn" onclick="exportScreenplay()" title="Export complete story as Markdown screenplay">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" x2="12" y1="15" y2="3"/>
-        </svg>
-        <span>Export</span>
+      <!-- Guest Login Button (Shown when not logged in) -->
+      <button id="header-login-btn" class="btn btn-primary" onclick="openModal('login-modal')" title="Log in as Jiya (Founder) or Sahil (Manager)" style="display: none; background: linear-gradient(135deg, #db2777 0%, #7c3aed 100%);">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <span>Studio Login</span>
       </button>
 
-      <!-- Active Collaborator Switcher -->
-      <div class="collaborator-pill" onclick="openModal('switch-team-modal')" title="Click to switch collaborator">
-        <div class="collaborator-avatar" id="current-user-avatar">S</div>
+      <!-- Active Collaborator Switcher / Profile Pill -->
+      <div class="collaborator-pill" id="header-user-pill" onclick="openModal('switch-team-modal')" title="Creator Profile (Click to switch)">
+        <div class="collaborator-avatar" id="current-user-avatar">J</div>
         <div>
-          <div class="collaborator-name" id="current-user-name">Sahil</div>
-          <div class="collaborator-role" id="current-user-role">Director &amp; Writer</div>
+          <div class="collaborator-name" id="current-user-name">Jiya</div>
+          <div class="collaborator-role" id="current-user-role">Founder &amp; Director</div>
         </div>
       </div>
+
+      <!-- Logout Button -->
+      <button id="header-logout-btn" class="btn btn-secondary btn-sm" onclick="logoutUser()" title="Log out from Creator account" style="display: none; padding: 0.35rem 0.65rem;">
+        Logout
+      </button>
     </div>
   </header>
 
@@ -133,57 +125,123 @@
   <!-- Main App Content -->
   <main class="main-wrapper">
 
-    <!-- 3-Tier Hierarchy Pipeline Stepper: 1. STORY -> 2. PART -> 3. SCENE -->
-    <section class="workflow-stepper-panel glass-panel">
-      <div class="stepper-track">
-        <!-- Step 1: Story -->
-        <div class="step-card active" id="stepper-step-1" onclick="scrollToSection('section-step-1-story')" title="Click to jump to Step 1: Anime Story">
-          <div class="step-num-pill">STEP 1</div>
-          <div class="step-content">
-            <div class="step-heading">Create &amp; Select Story</div>
-            <div class="step-subtext" id="stepper-story-name">Loading Story...</div>
+    <!-- =========================================================================
+         TAB 0: PUBLIC LANDING PAGE & ANIME SHOWCASE
+         ========================================================================= -->
+    <div id="view-landing">
+      <!-- Hero Section -->
+      <section class="landing-hero glass-panel">
+        <div class="landing-hero-content">
+          <div class="landing-badge">OFFICIAL ANIME CREATIVE PLATFORM</div>
+          <img src="/assets/logo.jpg" alt="ANIME PLOT STUDIO Logo" class="landing-hero-logo" title="ANIME PLOT STUDIO">
+          <h1 class="landing-title">ANIME PLOT STUDIO</h1>
+          <p class="landing-subtitle">
+            Original Anime Series Production Hub • Dynamic Screenplays • Storyboards • AI Visual Art
+          </p>
+
+          <!-- Studio Leadership: Founder Jiya & Manager Sahil -->
+          <div class="founders-row">
+            <div class="founder-card jiya-card">
+              <div class="founder-avatar" style="background: #db2777;">👑</div>
+              <div class="founder-info">
+                <div class="founder-name">Jiya</div>
+                <div class="founder-role">Founder &amp; Main Director</div>
+                <div class="founder-desc">Mastermind behind story arcs, anime plot scripts &amp; scene vision</div>
+              </div>
+            </div>
+            <div class="founder-card sahil-card">
+              <div class="founder-avatar" style="background: #4f46e5;">🎬</div>
+              <div class="founder-info">
+                <div class="founder-name">Sahil</div>
+                <div class="founder-role">Studio Manager &amp; Art Producer</div>
+                <div class="founder-desc">Executes AI visual prompts, generates artwork &amp; manages publications</div>
+              </div>
+            </div>
           </div>
-          <button class="step-action-chip" onclick="event.stopPropagation(); openCreateStoryModal();" title="Create New Story">
-            + Create Story
-          </button>
-        </div>
 
-        <div class="stepper-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-
-        <!-- Step 2: Part -->
-        <div class="step-card" id="stepper-step-2" onclick="scrollToSection('section-step-2-parts')" title="Click to jump to Step 2: Story Parts">
-          <div class="step-num-pill">STEP 2</div>
-          <div class="step-content">
-            <div class="step-heading">Story Part (1, 2, 3...)</div>
-            <div class="step-subtext" id="stepper-part-name">Select or Create Part</div>
+          <!-- CTAs -->
+          <div class="landing-cta-row">
+            <button class="btn btn-primary btn-lg" onclick="handleEnterStudioOrLogin()" style="font-size: 1rem; padding: 0.85rem 1.75rem; font-weight: 800; border-radius: 14px;">
+              <span id="landing-main-cta-text">Enter Studio Workspace</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="btn btn-secondary btn-lg" onclick="scrollToSection('landing-published-stories')" style="font-size: 1rem; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 14px;">
+              Browse Published Stories
+            </button>
           </div>
-          <button class="step-action-chip" onclick="event.stopPropagation(); openModal('new-part-modal');" title="Create Next Part">
-            + New Part
-          </button>
         </div>
+      </section>
 
-        <div class="stepper-arrow">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </div>
-
-        <!-- Step 3: Scene (Seen) -->
-        <div class="step-card" id="stepper-step-3" onclick="scrollToSection('section-step-3-scenes')" title="Click to jump to Step 3: Visual Scenes">
-          <div class="step-num-pill">STEP 3</div>
-          <div class="step-content">
-            <div class="step-heading">Visual Scene (Seen)</div>
-            <div class="step-subtext" id="stepper-scene-name">Prompts &amp; Frames</div>
+      <!-- Published Stories Showcase Section -->
+      <section class="section-container" id="landing-published-stories" style="margin-top: 2.5rem;">
+        <div class="section-header-row">
+          <div>
+            <div class="section-step-badge">PUBLIC SHOWCASE • ORIGINAL STORIES</div>
+            <h2 class="section-title">Published Anime Stories &amp; Series Plots</h2>
+            <p class="section-desc">Original anime story concepts and visual scene artworks created and published by Director Jiya &amp; Manager Sahil.</p>
           </div>
-          <button class="step-action-chip" onclick="event.stopPropagation(); openCreateSceneModal();" title="Add Scene to Part">
-            + New Scene
-          </button>
         </div>
-      </div>
-    </section>
 
-    <!-- TAB 1: STORYBOARD & SCENE STUDIO -->
-    <div id="view-storyboard">
+        <!-- Dynamic Stories Grid -->
+        <div class="landing-stories-grid" id="landing-stories-grid">
+          <!-- Rendered by renderLandingShowcase() in app.js -->
+        </div>
+      </section>
+    </div>
+
+    <!-- =========================================================================
+         TAB 1: STORYBOARD & SCENE STUDIO (STUDIO WORKSPACE)
+         ========================================================================= -->
+    <div id="view-storyboard" style="display: none;">
+
+      <!-- 3-Tier Hierarchy Pipeline Stepper: 1. STORY -> 2. PART -> 3. SCENE -->
+      <section class="workflow-stepper-panel glass-panel">
+        <div class="stepper-track">
+          <!-- Step 1: Story -->
+          <div class="step-card active" id="stepper-step-1" onclick="scrollToSection('section-step-1-story')" title="Click to jump to Step 1: Anime Story">
+            <div class="step-num-pill">STEP 1</div>
+            <div class="step-content">
+              <div class="step-heading">Create &amp; Select Story</div>
+              <div class="step-subtext" id="stepper-story-name">Loading Story...</div>
+            </div>
+            <button class="step-action-chip" onclick="event.stopPropagation(); openCreateStoryModal();" title="Create New Story">
+              + Create Story
+            </button>
+          </div>
+
+          <div class="stepper-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+
+          <!-- Step 2: Part -->
+          <div class="step-card" id="stepper-step-2" onclick="scrollToSection('section-step-2-parts')" title="Click to jump to Step 2: Story Parts">
+            <div class="step-num-pill">STEP 2</div>
+            <div class="step-content">
+              <div class="step-heading">Story Part (1, 2, 3...)</div>
+              <div class="step-subtext" id="stepper-part-name">Select or Create Part</div>
+            </div>
+            <button class="step-action-chip" onclick="event.stopPropagation(); openModal('new-part-modal');" title="Create Next Part">
+              + New Part
+            </button>
+          </div>
+
+          <div class="stepper-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+
+          <!-- Step 3: Scene (Seen) -->
+          <div class="step-card" id="stepper-step-3" onclick="scrollToSection('section-step-3-scenes')" title="Click to jump to Step 3: Visual Scenes">
+            <div class="step-num-pill">STEP 3</div>
+            <div class="step-content">
+              <div class="step-heading">Visual Scene (Seen)</div>
+              <div class="step-subtext" id="stepper-scene-name">Prompts &amp; Frames</div>
+            </div>
+            <button class="step-action-chip" onclick="event.stopPropagation(); openCreateSceneModal();" title="Add Scene to Part">
+              + New Scene
+            </button>
+          </div>
+        </div>
+      </section>
       
       <!-- =========================================================================
            TIER 1: ANIME STORIES & PLOTS (STEP 1)
@@ -251,6 +309,10 @@
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
                 </svg>
                 Upload Poster
+              </button>
+              <button class="btn btn-sm btn-secondary" id="btn-toggle-publish-story" onclick="toggleCurrentStoryPublish()" title="Toggle showing this story on the Public Landing Showcase">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                <span id="btn-toggle-publish-label">Show on Landing</span>
               </button>
               <button class="btn btn-sm btn-secondary danger-hover" onclick="confirmDeleteStory()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -682,55 +744,54 @@
     </div>
   </div>
 
-  <!-- 4. Scene Editor / Creator Modal -->
+  <!-- 4. Simplified Scene Editor / Creator Modal (Optimized for Jiya & Sahil) -->
   <div class="modal-backdrop" id="scene-edit-modal">
-    <div class="modal-window" style="max-width: 860px;">
+    <div class="modal-window" style="max-width: 720px;">
       <div class="modal-header">
-        <h3 class="modal-title" id="scene-modal-heading">Add / Edit Scene</h3>
+        <div>
+          <h3 class="modal-title" id="scene-modal-heading">Add Scene Description &amp; Visual Prompt</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Director Jiya pastes description/prompts • Manager Sahil copies &amp; generates art</p>
+        </div>
         <button class="modal-close-btn" onclick="closeModal('scene-edit-modal')">&times;</button>
       </div>
       <div class="modal-body">
         <form id="scene-form" onsubmit="event.preventDefault(); submitSceneForm();">
           <input type="hidden" id="edit-scene-id">
 
+          <!-- Scene Title -->
           <div class="form-group">
-            <label class="form-label">Scene Title</label>
-            <input type="text" class="form-input" id="scene-title-input" placeholder="e.g. Scene 4: Duel on the Rooftop" required>
+            <label class="form-label" style="font-weight: 700;">Scene Title</label>
+            <input type="text" class="form-input" id="scene-title-input" placeholder="e.g. Scene 3: Duel on Shibuya Crossing Rooftop">
           </div>
 
-          <div class="form-row" style="margin-top: 1rem;">
-            <div class="form-group">
-              <label class="form-label">Location / Setting</label>
-              <input type="text" class="form-input" id="scene-location-input" placeholder="e.g. Neo-Tokyo Skyscraper Rooftop">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Time of Day / Atmosphere</label>
-              <input type="text" class="form-input" id="scene-time-input" placeholder="e.g. Midnight Rain / Twilight Golden Hour">
-            </div>
-          </div>
-
-          <div class="form-row" style="margin-top: 1rem;">
-            <div class="form-group">
-              <label class="form-label">Mood / Emotional Tone</label>
-              <input type="text" class="form-input" id="scene-mood-input" placeholder="e.g. Intense, Melancholic, Epic Climax">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Camera Angle &amp; Shot Type</label>
-              <input type="text" class="form-input" id="scene-camera-input" placeholder="e.g. Wide Establishing Shot / Low Dutch Tilt">
-            </div>
-          </div>
-
-          <!-- Visual Prompt Builder -->
+          <!-- Jiya's Simple All-In-One Box -->
           <div class="form-group" style="margin-top: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <label class="form-label" style="color: var(--primary);">
-                AI Visual Generation Prompt (Midjourney / SD / Leonardo)
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <label class="form-label" style="font-weight: 800; color: #db2777; margin-bottom: 0;">
+                Paste Entire Scene Description &amp; Prompts (One Box)
               </label>
+              <button type="button" class="btn-toggle-advanced" onclick="autoSplitSceneInput()" title="Auto-detect Prompt and Narrative beats">
+                Auto-Format
+              </button>
             </div>
+            <textarea class="form-textarea" id="scene-unified-input" rows="5" placeholder="Director Jiya: Paste your entire scene narrative, dialogue, and AI visual prompts here...
+Example:
+Rain pours over Shibuya as Ren unsheathes his astral blade.
+Prompt: in the style of Ufotable, cyber-samurai with glowing cyan katana in midnight rain, cinematic lighting, 8k wallpaper" oninput="onUnifiedSceneInput(this.value)"></textarea>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Tip: Paste everything here. Sahil (Manager) can copy the prompt with 1 tap to generate in Midjourney/SD.
+            </div>
+          </div>
+
+          <!-- Dedicated AI Visual Prompt -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label" style="font-weight: 800; color: var(--primary);">
+              AI Visual Generation Prompt (Copied by Sahil for Midjourney / SD)
+            </label>
             <textarea class="form-textarea" id="scene-prompt-input" rows="3" placeholder="masterpiece, best quality, anime still, Makoto Shinkai lighting, lone warrior in the rain..." required></textarea>
 
-            <!-- 1-Click Prompt Preset Helper Chips -->
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Click to append anime studio aesthetic:</div>
+            <!-- 1-Click Aesthetic Chips -->
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">Click to append anime studio aesthetic:</div>
             <div class="preset-chips-container">
               <span class="preset-chip" onclick="appendPresetToScenePrompt('in the style of Makoto Shinkai, luminous sky, lens flare, vivid anime lighting, 8k resolution')">
                 + Makoto Shinkai Sky
@@ -747,43 +808,126 @@
               <span class="preset-chip" onclick="appendPresetToScenePrompt('90s vintage anime cel, retro anime screenshot, VHS tape grain, Cowboy Bebop aesthetic')">
                 + 90s Retro Cel
               </span>
-              <span class="preset-chip" onclick="appendPresetToScenePrompt('cinematic extreme low angle shot, looking up at character, dramatic perspective')">
-                + Low Angle Heroic
-              </span>
             </div>
           </div>
 
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">Negative Prompt</label>
-            <input type="text" class="form-input" id="scene-negative-input" value="low quality, blurry, deformed hands, extra limbs, bad anatomy, text, watermark">
+          <!-- Optional Collapsible Cinematography Details -->
+          <div style="margin-top: 1rem;">
+            <button type="button" class="btn-toggle-advanced" id="toggle-advanced-scene-btn" onclick="toggleAdvancedSceneFields()">
+              + Show Optional Camera &amp; Atmospheric Settings
+            </button>
           </div>
 
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">Action / Narrative Beats (Screenplay)</label>
-            <textarea class="form-textarea" id="scene-script-input" rows="2" placeholder="Describe the character movements, sound effects, and environment..."></textarea>
-          </div>
+          <div id="scene-advanced-fields" style="display: none; margin-top: 0.75rem; background: var(--bg-subtle); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-glass);">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Location / Setting</label>
+                <input type="text" class="form-input" id="scene-location-input" placeholder="e.g. Neo-Tokyo Shibuya District">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Time / Atmosphere</label>
+                <input type="text" class="form-input" id="scene-time-input" placeholder="e.g. Midnight Rain">
+              </div>
+            </div>
 
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">Character Dialogue</label>
-            <textarea class="form-textarea" id="scene-dialogue-input" rows="2" placeholder='REN: "We only get one shot at this timeline."'></textarea>
-          </div>
+            <div class="form-row" style="margin-top: 0.75rem;">
+              <div class="form-group">
+                <label class="form-label">Mood / Emotion</label>
+                <input type="text" class="form-input" id="scene-mood-input" placeholder="e.g. Cinematic, Intense">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Camera Angle</label>
+                <input type="text" class="form-input" id="scene-camera-input" placeholder="e.g. Low Dutch Angle">
+              </div>
+            </div>
 
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">Scene Status</label>
-            <select class="form-select" id="scene-status-input">
-              <option value="In Progress">In Progress</option>
-              <option value="Prompt Ready">Prompt Ready (Ready for AI Render)</option>
-              <option value="Rendered">Rendered (Picture Uploaded)</option>
-              <option value="Approved">Approved by Team</option>
-            </select>
+            <div class="form-group" style="margin-top: 0.75rem;">
+              <label class="form-label">Negative Prompt</label>
+              <input type="text" class="form-input" id="scene-negative-input" value="low quality, blurry, deformed hands, extra limbs, bad anatomy, text, watermark">
+            </div>
+
+            <div class="form-group" style="margin-top: 0.75rem;">
+              <label class="form-label">Action / Narrative Beats</label>
+              <textarea class="form-textarea" id="scene-script-input" rows="2" placeholder="Narrative movement description..."></textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.75rem;">
+              <label class="form-label">Dialogue</label>
+              <textarea class="form-textarea" id="scene-dialogue-input" rows="2" placeholder='REN: "We only get one shot at this timeline."'></textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 0.75rem;">
+              <label class="form-label">Scene Status</label>
+              <select class="form-select" id="scene-status-input">
+                <option value="Prompt Ready">Prompt Ready (For Sahil to Render)</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Rendered">Rendered (Picture Uploaded)</option>
+                <option value="Approved">Approved by Team</option>
+              </select>
+            </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="closeModal('scene-edit-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="submitSceneForm()">
+        <button class="btn btn-primary" onclick="submitSceneForm()" style="font-weight: 800; padding: 0.65rem 1.5rem;">
           Save Scene
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4B. Creator Login Modal (Jiya & Sahil) -->
+  <div class="modal-backdrop" id="login-modal">
+    <div class="modal-window login-window" style="max-width: 440px;">
+      <div class="modal-header" style="justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <img src="/assets/logo.jpg" alt="Logo" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover;">
+          <div>
+            <h3 class="modal-title">Creator Studio Login</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Anime Plot Studio Leadership Access</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('login-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="login-quick-select-label">Select Creator Profile:</div>
+        <div class="login-role-chips">
+          <button type="button" class="login-role-chip selected" id="chip-jiya" onclick="selectLoginProfile('jiya')">
+            <span class="role-icon" style="background: #db2777;">👑</span>
+            <div>
+              <div class="role-name">Jiya</div>
+              <div class="role-sub">Founder &amp; Director</div>
+            </div>
+          </button>
+          <button type="button" class="login-role-chip" id="chip-sahil" onclick="selectLoginProfile('sahil')">
+            <span class="role-icon" style="background: #4f46e5;">🎬</span>
+            <div>
+              <div class="role-name">Sahil</div>
+              <div class="role-sub">Studio Manager</div>
+            </div>
+          </button>
+        </div>
+
+        <form id="login-form" onsubmit="event.preventDefault(); submitLogin();" style="margin-top: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 700;">Username</label>
+            <input type="text" id="login-username" class="form-input" value="jiya" placeholder="jiya or sahil" required>
+          </div>
+          <div class="form-group" style="margin-top: 0.85rem;">
+            <label class="form-label" style="font-weight: 700;">Password</label>
+            <input type="password" id="login-password" class="form-input" value="44113290" placeholder="Enter password (44113290)" required>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.85rem;">
+            <input type="checkbox" id="login-remember" checked style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary);">
+            <label for="login-remember" style="font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;">
+              Remember login on this device until logout
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary" id="login-submit-btn" style="width: 100%; margin-top: 1.25rem; padding: 0.75rem; font-weight: 800; font-size: 0.95rem; border-radius: 12px; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%);">
+            Login &amp; Enter Studio
+          </button>
+        </form>
       </div>
     </div>
   </div>
@@ -858,7 +1002,14 @@
     </div>
   <!-- Mobile Bottom Native Navigation Bar -->
   <nav class="mobile-bottom-nav">
-    <button class="mobile-nav-item active" data-tab="storyboard" onclick="switchTab('storyboard')">
+    <button class="mobile-nav-item active" data-tab="landing" onclick="switchTab('landing')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>Home</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="storyboard" onclick="switchTab('storyboard')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
         <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/>
@@ -886,14 +1037,6 @@
         <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/>
       </svg>
       <span>Prompts</span>
-    </button>
-    <button class="mobile-nav-item" data-tab="team" onclick="switchTab('team')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-      </svg>
-      <span>Team</span>
     </button>
   </nav>
 

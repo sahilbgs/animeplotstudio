@@ -211,5 +211,23 @@ const API = {
   // Prompt Presets
   async getPromptPresets() {
     return this.request('/prompt-presets');
+  },
+
+  // Auth & Creators (Jiya Founder & Sahil Manager)
+  async login(username, password) {
+    return this.request('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+  },
+
+  async getCreators() {
+    return this.request('/auth/creators');
+  },
+
+  async togglePublishProject(projectId, isPublished) {
+    return this.updateProject(projectId, { is_published: isPublished });
   }
 };
+

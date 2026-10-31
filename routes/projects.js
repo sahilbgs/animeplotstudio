@@ -122,7 +122,8 @@ router.put('/:id', async (req, res) => {
       target_audience,
       art_style,
       cover_image,
-      status
+      status,
+      is_published
     } = req.body;
 
     const result = await db.query(`
@@ -135,10 +136,11 @@ router.put('/:id', async (req, res) => {
         art_style = COALESCE($6, art_style),
         cover_image = COALESCE($7, cover_image),
         status = COALESCE($8, status),
+        is_published = COALESCE($9, is_published),
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $9
+      WHERE id = $10
       RETURNING *
-    `, [title, tagline, synopsis, genre, target_audience, art_style, cover_image, status, projId]);
+    `, [title, tagline, synopsis, genre, target_audience, art_style, cover_image, status, is_published, projId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Project not found' });

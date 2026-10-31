@@ -31,9 +31,11 @@ async function initDB() {
         role VARCHAR(100) DEFAULT 'Anime Story Creator',
         avatar_color VARCHAR(30) DEFAULT '#8b5cf6',
         avatar_emoji VARCHAR(20) DEFAULT '⚡',
+        password VARCHAR(255) DEFAULT '44113290',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await client.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password VARCHAR(255) DEFAULT '44113290';`);
 
     // 2. Projects (Anime Series)
     await client.query(`
@@ -47,11 +49,13 @@ async function initDB() {
         art_style VARCHAR(100) DEFAULT 'Makoto Shinkai & Ufotable Hybrid',
         cover_image TEXT,
         status VARCHAR(50) DEFAULT 'In Production',
-        created_by VARCHAR(100) DEFAULT 'Sahil & Team',
+        created_by VARCHAR(100) DEFAULT 'Jiya & Sahil',
+        is_published BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+    await client.query(`ALTER TABLE projects ADD COLUMN IF NOT EXISTS is_published BOOLEAN DEFAULT true;`);
 
     // 3. Characters
     await client.query(`

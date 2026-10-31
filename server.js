@@ -13,6 +13,7 @@ const teamRouter = require('./routes/team');
 const charactersRouter = require('./routes/characters');
 const commentsRouter = require('./routes/comments');
 const presetsRouter = require('./routes/presets');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -34,6 +35,7 @@ app.use(express.static(publicDir));
 app.use('/uploads', express.static(uploadsDir));
 
 // API Routes
+app.use('/api/auth', authRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/parts', partsRouter);
 app.use('/api/scenes', scenesRouter);

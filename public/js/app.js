@@ -6,12 +6,13 @@ const state = {
   activeProject: null,
   activePart: null,
   activeScene: null,
-  activeTab: 'storyboard',
+  activeTab: 'landing',
+  isLoggedIn: false,
   currentUser: {
-    username: 'sahil',
-    display_name: 'Sahil',
-    role: 'Director & Lead Writer',
-    avatar_color: '#4f46e5'
+    username: 'jiya',
+    display_name: 'Jiya',
+    role: 'Founder & Main Director',
+    avatar_color: '#db2777'
   },
   projects: [],
   parts: [],
@@ -26,25 +27,75 @@ let sceneDropzone = null;
 let partDropzone = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initCurrentUser();
+  checkAuthSession();
   initEventListeners();
   initDropzones();
   initPWA();
   await loadInitialData();
+
+  // If visitor is not logged in, always show public landing showcase
+  if (!state.isLoggedIn) {
+    switchTab('landing');
+  } else {
+    // If logged in, check URL hash or stay on storyboard/landing
+    const hash = window.location.hash.replace('#', '');
+    if (['landing', 'storyboard', 'reader', 'prompts', 'team'].includes(hash)) {
+      switchTab(hash);
+    } else {
+      switchTab('storyboard');
+    }
+  }
 });
 
-// Initialize active collaborator from localStorage
-function initCurrentUser() {
-  const saved = localStorage.getItem('anime_studio_user');
+// Check persistent authentication session (localStorage / sessionStorage)
+function checkAuthSession() {
+  const saved = localStorage.getItem('anime_plot_auth') || sessionStorage.getItem('anime_plot_auth');
   if (saved) {
     try {
-      state.currentUser = JSON.parse(saved);
-    } catch (e) {}
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.user) {
+        state.isLoggedIn = true;
+        state.currentUser = parsed.user;
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved auth session:', e);
+      state.isLoggedIn = false;
+    }
+  } else {
+    // Check fallback user
+    const legacyUser = localStorage.getItem('anime_studio_user');
+    if (legacyUser) {
+      try {
+        state.currentUser = JSON.parse(legacyUser);
+      } catch (e) {}
+    }
+    state.isLoggedIn = false;
   }
-  updateUserHeaderDisplay();
+  updateAuthUI();
+}
+
+function updateAuthUI() {
+  const loginBtn = document.getElementById('header-login-btn');
+  const userPill = document.getElementById('header-user-pill');
+  const logoutBtn = document.getElementById('header-logout-btn');
+  const landingCtaText = document.getElementById('landing-main-cta-text');
+
+  if (state.isLoggedIn && state.currentUser) {
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userPill) userPill.style.display = 'flex';
+    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    if (landingCtaText) landingCtaText.textContent = `Enter Studio Workspace (${state.currentUser.display_name})`;
+    updateUserHeaderDisplay();
+  } else {
+    if (loginBtn) loginBtn.style.display = 'inline-flex';
+    if (userPill) userPill.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (landingCtaText) landingCtaText.textContent = 'Enter Studio Workspace (Creator Login)';
+  }
 }
 
 function updateUserHeaderDisplay() {
+  if (!state.currentUser) return;
   const nameEl = document.getElementById('current-user-name');
   const roleEl = document.getElementById('current-user-role');
   const avatarEl = document.getElementById('current-user-avatar');
@@ -52,7 +103,7 @@ function updateUserHeaderDisplay() {
   if (roleEl) roleEl.textContent = state.currentUser.role;
   if (avatarEl) {
     avatarEl.textContent = getInitials(state.currentUser.display_name);
-    avatarEl.style.backgroundColor = state.currentUser.avatar_color || '#4f46e5';
+    avatarEl.style.backgroundColor = state.currentUser.avatar_color || '#db2777';
   }
 }
 
@@ -69,6 +120,9 @@ async function loadInitialData() {
     state.team = teamData.team || [];
     state.presets = presetsData.presets || [];
     state.projects = projData.projects || [];
+
+    // Render landing showcase with all stories
+    renderLandingShowcase();
 
     // Select first project or handle empty
     if (state.projects.length > 0) {
@@ -169,7 +223,48 @@ function renderProjectBanner() {
   if (partsCountEl) partsCountEl.textContent = state.parts.length;
   const totalScenes = state.parts.reduce((sum, pt) => sum + (parseInt(pt.scene_count, 10) || 0), 0);
   if (scenesCountEl) scenesCountEl.textContent = totalScenes;
+
+  // Update Publish to Landing button
+  const pubLabel = document.getElementById('btn-toggle-publish-label');
+  const pubBtn = document.getElementById('btn-toggle-publish-story');
+  if (pubLabel && pubBtn) {
+    const isPub = p.is_published !== false;
+    pubLabel.textContent = isPub ? 'Published on Landing ✓' : 'Publish to Landing';
+    if (isPub) {
+      pubBtn.style.borderColor = '#10b981';
+      pubBtn.style.color = '#10b981';
+    } else {
+      pubBtn.style.borderColor = '';
+      pubBtn.style.color = '';
+    }
+  }
 }
+
+// Toggle current active story publication on Landing page
+async function toggleCurrentStoryPublish() {
+  if (!state.activeProject) return;
+  const currentStatus = state.activeProject.is_published !== false;
+  const nextStatus = !currentStatus;
+
+  try {
+    showToast(nextStatus ? 'Publishing story to Landing page...' : 'Hiding story from Landing page...', 'info');
+    await API.togglePublishProject(state.activeProject.id, nextStatus);
+    state.activeProject.is_published = nextStatus;
+
+    // Update in state.projects list
+    const pIndex = state.projects.findIndex(p => p.id === state.activeProject.id);
+    if (pIndex !== -1) {
+      state.projects[pIndex].is_published = nextStatus;
+    }
+
+    renderProjectBanner();
+    renderLandingShowcase();
+    showToast(nextStatus ? 'Story is now LIVE on Landing Showcase!' : 'Story hidden from Landing page', 'success');
+  } catch (err) {
+    showToast('Failed to update publication: ' + err.message, 'error');
+  }
+}
+
 
 // ==============================================================================
 // STEP 1: ANIME STORIES & PLOTS CONTROLLER
@@ -591,38 +686,51 @@ function renderScenesView() {
     const card = document.createElement('div');
     card.className = 'scene-card';
     const primaryImgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
+    const hasArt = scene.primary_image && !scene.primary_image.includes('shibuya_rain_establishing.svg');
 
     card.innerHTML = `
       <div class="scene-visual-wrap">
-        <img src="${primaryImgUrl}" class="scene-primary-img" alt="${scene.title}" onclick="openLightbox('${primaryImgUrl}', '${scene.title}')">
+        <img src="${primaryImgUrl}" class="scene-primary-img" alt="${escapeHtml(scene.title)}" onclick="openLightbox('${primaryImgUrl}', '${escapeJs(scene.title)}')">
         <div class="scene-badge-row">
           <div class="scene-number-tag">SCENE ${scene.scene_number}</div>
-          <div class="scene-status-tag">${scene.status || 'In Progress'}</div>
+          ${hasArt ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">✨ Art Ready &amp; Uploaded</div>' : '<div class="scene-status-tag" style="background: rgba(245, 158, 11, 0.95); color: #fff;">⏳ Awaiting Art</div>'}
         </div>
         <div class="scene-upload-quick-overlay">
           <button class="quick-action-btn" onclick="openSceneUploadModal(event, ${scene.id})">
-            ${ICONS.upload} Upload Picture
+            ${ICONS.upload} Upload Art
           </button>
         </div>
       </div>
 
       <div class="scene-body">
+        <!-- Sahil Manager Quick Actions: Copy AI Prompt & Upload Art -->
+        <div class="scene-manager-bar">
+          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(scene.visual_prompt)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Stable Diffusion">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Copy AI Prompt</span>
+          </button>
+          <button class="btn-upload-art-direct" onclick="openSceneUploadModal(event, ${scene.id})" title="Upload generated artwork directly">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Upload Art</span>
+          </button>
+        </div>
+
         <div class="scene-title-row">
-          <h3 class="scene-title-text">${scene.title}</h3>
+          <h3 class="scene-title-text">${escapeHtml(scene.title)}</h3>
         </div>
 
         <div class="scene-meta-chips">
-          <span class="meta-chip highlight">Location: ${scene.location || 'Location'}</span>
-          <span class="meta-chip">Time: ${scene.time_of_day || 'Time'}</span>
-          <span class="meta-chip">Mood: ${scene.mood || 'Mood'}</span>
-          <span class="meta-chip">Shot: ${scene.camera_angle || 'Camera'}</span>
+          <span class="meta-chip highlight">Location: ${escapeHtml(scene.location || 'Neo-Tokyo')}</span>
+          <span class="meta-chip">Time: ${escapeHtml(scene.time_of_day || 'Day')}</span>
+          <span class="meta-chip">Mood: ${escapeHtml(scene.mood || 'Cinematic')}</span>
+          <span class="meta-chip">Shot: ${escapeHtml(scene.camera_angle || 'Medium Shot')}</span>
         </div>
 
         <!-- AI Visual Prompt Box -->
         <div class="prompt-box-card">
           <div class="prompt-box-header">
             <span class="prompt-label">Visual Generation Prompt</span>
-            <button class="copy-prompt-btn" onclick="copyToClipboard('${escapeJs(scene.visual_prompt)}', 'Scene ${scene.scene_number} Prompt')">
+            <button class="copy-prompt-btn" onclick="copyScenePromptForSahil('${escapeJs(scene.visual_prompt)}', ${scene.scene_number})">
               ${ICONS.copy} Copy Prompt
             </button>
           </div>
@@ -649,7 +757,7 @@ function renderScenesView() {
         ` : ''}
 
         <div class="scene-footer">
-          <span>By: <strong>${scene.created_by || 'Team'}</strong></span>
+          <span>By: <strong>${escapeHtml(scene.created_by || 'Director Jiya')}</strong></span>
           <div class="scene-action-buttons">
             <button class="btn-icon" title="Edit Scene Details" onclick="openEditSceneModal(${scene.id})">
               ${ICONS.edit}
@@ -664,6 +772,12 @@ function renderScenesView() {
 
     container.appendChild(card);
   });
+}
+
+// 1-Tap Copy Scene Prompt for Sahil (AI Art Producer)
+function copyScenePromptForSahil(promptText, sceneNum) {
+  copyToClipboard(promptText, `Scene ${sceneNum} Prompt`);
+  showToast(`Scene ${sceneNum} Prompt copied! Sahil can paste in Midjourney/SD.`, 'success');
 }
 
 // Render Screenplay Reader View
@@ -946,11 +1060,38 @@ async function submitNewPart() {
   }
 }
 
+// ==============================================================================
+// STEP 3: SIMPLE SCENE CREATION & EDITING (DIRECTOR JIYA & MANAGER SAHIL)
+// ==============================================================================
+
 // Open Create Scene Modal
 function openCreateSceneModal() {
-  document.getElementById('scene-modal-heading').textContent = `Add Scene to Part ${state.activePart.part_number}`;
+  if (!state.activePart) {
+    showToast('Please select or create a Part first', 'info');
+    return;
+  }
+  const partNum = state.activePart ? state.activePart.part_number : 1;
+  const nextSceneNum = state.scenes ? state.scenes.length + 1 : 1;
+
+  document.getElementById('scene-modal-heading').textContent = `Add Scene ${nextSceneNum} to Part ${partNum}`;
   document.getElementById('edit-scene-id').value = '';
   document.getElementById('scene-form').reset();
+
+  const titleInp = document.getElementById('scene-title-input');
+  if (titleInp) titleInp.value = `Scene ${nextSceneNum}`;
+
+  const unifiedInp = document.getElementById('scene-unified-input');
+  if (unifiedInp) unifiedInp.value = '';
+
+  const promptInp = document.getElementById('scene-prompt-input');
+  if (promptInp) promptInp.value = '';
+
+  const advFields = document.getElementById('scene-advanced-fields');
+  if (advFields) advFields.style.display = 'none';
+
+  const toggleBtn = document.getElementById('toggle-advanced-scene-btn');
+  if (toggleBtn) toggleBtn.textContent = '+ Show Optional Camera & Atmospheric Settings';
+
   openModal('scene-edit-modal');
 }
 
@@ -962,52 +1103,163 @@ function openEditSceneModal(sceneId) {
   document.getElementById('scene-modal-heading').textContent = `Edit Scene ${scene.scene_number}`;
   document.getElementById('edit-scene-id').value = scene.id;
   document.getElementById('scene-title-input').value = scene.title || '';
+
+  // Combine narrative script and prompt into unified input for seamless 1-box editing
+  const unifiedInp = document.getElementById('scene-unified-input');
+  if (unifiedInp) {
+    let combined = '';
+    if (scene.narrative_script) combined += scene.narrative_script + '\n\n';
+    if (scene.visual_prompt) combined += 'Prompt: ' + scene.visual_prompt;
+    unifiedInp.value = combined.trim() || scene.visual_prompt || '';
+  }
+
+  document.getElementById('scene-prompt-input').value = scene.visual_prompt || '';
   document.getElementById('scene-location-input').value = scene.location || '';
   document.getElementById('scene-time-input').value = scene.time_of_day || '';
   document.getElementById('scene-mood-input').value = scene.mood || '';
   document.getElementById('scene-camera-input').value = scene.camera_angle || '';
-  document.getElementById('scene-prompt-input').value = scene.visual_prompt || '';
-  document.getElementById('scene-negative-input').value = scene.negative_prompt || '';
+  document.getElementById('scene-negative-input').value = scene.negative_prompt || 'low quality, blurry, deformed hands, extra limbs, bad anatomy, text, watermark';
   document.getElementById('scene-script-input').value = scene.narrative_script || '';
   document.getElementById('scene-dialogue-input').value = scene.dialogue || '';
-  document.getElementById('scene-status-input').value = scene.status || 'In Progress';
+  document.getElementById('scene-status-input').value = scene.status || 'Prompt Ready';
 
   openModal('scene-edit-modal');
+}
+
+// Single-box unified input listener: Jiya pastes entire scene description & prompts
+function onUnifiedSceneInput(val) {
+  if (!val) return;
+  const promptInp = document.getElementById('scene-prompt-input');
+  const titleInp = document.getElementById('scene-title-input');
+
+  // If user included "Prompt: ..."
+  const promptMatch = val.match(/(?:prompt|visual\s*prompt|midjourney|sd)[:\-]\s*([^\n\r]+(?:[\n\r]+[^\n\r]+)*)/i);
+  if (promptMatch && promptMatch[1]) {
+    if (promptInp) promptInp.value = promptMatch[1].trim();
+  } else if (promptInp && (!promptInp.value || promptInp.value.length < 10)) {
+    promptInp.value = val.trim();
+  }
+
+  // Auto-detect title from first line if empty
+  if (titleInp && (!titleInp.value || titleInp.value.startsWith('Scene '))) {
+    const lines = val.trim().split('\n');
+    const firstLine = lines[0].trim();
+    if (firstLine.length > 3 && firstLine.length < 50 && !/^(prompt|negative)/i.test(firstLine)) {
+      titleInp.value = firstLine.replace(/^(scene\s*\d*[:\-]?\s*)/i, '');
+    }
+  }
+}
+
+// Auto-Split Scene Input (Smart Parser for Director Jiya)
+function autoSplitSceneInput() {
+  const unified = document.getElementById('scene-unified-input');
+  const titleInp = document.getElementById('scene-title-input');
+  const promptInp = document.getElementById('scene-prompt-input');
+  const scriptInp = document.getElementById('scene-script-input');
+  const dialogueInp = document.getElementById('scene-dialogue-input');
+
+  if (!unified || !unified.value.trim()) {
+    showToast('Please paste your scene text or prompts first', 'info');
+    return;
+  }
+
+  const raw = unified.value.trim();
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+
+  let detectedPrompt = '';
+  let detectedScript = [];
+  let detectedDialogue = [];
+  let detectedTitle = '';
+
+  for (let line of lines) {
+    if (/^(prompt|visual|midjourney|sd|ai\s*prompt)[:\-]/i.test(line)) {
+      detectedPrompt = line.replace(/^(prompt|visual|midjourney|sd|ai\s*prompt)[:\-]\s*/i, '');
+    } else if (/^(scene\s*\d*[:\-]|act\s*\d*[:\-])/i.test(line) && !detectedTitle) {
+      detectedTitle = line;
+    } else if (/^[A-Z0-9_\s]{2,15}:\s*["']?.+["']?$/.test(line)) {
+      detectedDialogue.push(line);
+    } else {
+      detectedScript.push(line);
+    }
+  }
+
+  if (detectedTitle && titleInp) titleInp.value = detectedTitle;
+  if (detectedPrompt && promptInp) promptInp.value = detectedPrompt;
+  else if (promptInp && !promptInp.value) promptInp.value = raw;
+
+  if (detectedScript.length > 0 && scriptInp) scriptInp.value = detectedScript.join('\n');
+  if (detectedDialogue.length > 0 && dialogueInp) dialogueInp.value = detectedDialogue.join('\n');
+
+  showToast('Auto-formatted scene beats & visual prompt!', 'success');
+}
+
+// Toggle Advanced Camera / Cinematography settings
+function toggleAdvancedSceneFields() {
+  const adv = document.getElementById('scene-advanced-fields');
+  const btn = document.getElementById('toggle-advanced-scene-btn');
+  if (!adv) return;
+  const isHidden = adv.style.display === 'none' || !adv.style.display;
+  adv.style.display = isHidden ? 'block' : 'none';
+  if (btn) {
+    btn.textContent = isHidden ? '− Hide Optional Camera & Atmospheric Settings' : '+ Show Optional Camera & Atmospheric Settings';
+  }
 }
 
 // Submit Scene Form (Create or Update)
 async function submitSceneForm() {
   const sceneId = document.getElementById('edit-scene-id').value;
-  const title = document.getElementById('scene-title-input').value;
-  const location = document.getElementById('scene-location-input').value;
-  const time = document.getElementById('scene-time-input').value;
-  const mood = document.getElementById('scene-mood-input').value;
-  const camera = document.getElementById('scene-camera-input').value;
-  const prompt = document.getElementById('scene-prompt-input').value;
-  const negative = document.getElementById('scene-negative-input').value;
-  const script = document.getElementById('scene-script-input').value;
-  const dialogue = document.getElementById('scene-dialogue-input').value;
-  const status = document.getElementById('scene-status-input').value;
+  let title = document.getElementById('scene-title-input').value;
+  const unified = document.getElementById('scene-unified-input')?.value || '';
+  let prompt = document.getElementById('scene-prompt-input').value;
+  const location = document.getElementById('scene-location-input')?.value || 'Neo-Tokyo Shibuya';
+  const time = document.getElementById('scene-time-input')?.value || 'Midnight Rain';
+  const mood = document.getElementById('scene-mood-input')?.value || 'Cinematic Action';
+  const camera = document.getElementById('scene-camera-input')?.value || 'Low Dutch Angle';
+  const negative = document.getElementById('scene-negative-input')?.value || 'low quality, blurry, deformed hands, extra limbs';
+  let script = document.getElementById('scene-script-input')?.value || '';
+  const dialogue = document.getElementById('scene-dialogue-input')?.value || '';
+  const status = document.getElementById('scene-status-input')?.value || 'Prompt Ready';
 
-  if (!title || !prompt) {
-    showToast('Scene title and visual prompt are required!', 'error');
+  // If prompt is empty but unified input has content, use unified input
+  if ((!prompt || !prompt.trim()) && unified.trim()) {
+    prompt = unified.trim();
+  }
+
+  // If script is empty but unified input has content, store unified text in script
+  if (!script && unified.trim()) {
+    script = unified.trim();
+  }
+
+  if (!title || !title.trim()) {
+    title = `Scene ${(state.scenes ? state.scenes.length + 1 : 1)}`;
+  }
+
+  if (!prompt || !prompt.trim()) {
+    showToast('Please paste your scene description or visual prompt!', 'error');
     return;
   }
 
   const payload = {
-    title, location, time_of_day: time, mood, camera_angle: camera,
-    visual_prompt: prompt, negative_prompt: negative,
-    narrative_script: script, dialogue, status,
-    created_by: state.currentUser.display_name
+    title: title.trim(),
+    location: location.trim(),
+    time_of_day: time.trim(),
+    mood: mood.trim(),
+    camera_angle: camera.trim(),
+    visual_prompt: prompt.trim(),
+    negative_prompt: negative.trim(),
+    narrative_script: script.trim(),
+    dialogue: dialogue.trim(),
+    status: status,
+    created_by: state.currentUser ? state.currentUser.display_name : 'Director Jiya'
   };
 
   try {
     if (sceneId) {
       await API.updateScene(sceneId, payload);
-      showToast('Scene updated in PostgreSQL!', 'success');
+      showToast('Scene updated in studio!', 'success');
     } else {
       await API.createScene(state.activePart.id, payload);
-      showToast('New Scene added to Part!', 'success');
+      showToast('New Scene added! Ready for Sahil to copy prompt & generate art.', 'success');
     }
 
     closeModal('scene-edit-modal');
@@ -1077,7 +1329,7 @@ async function submitAddFriend() {
   }
 }
 
-// Switch App Tabs (Storyboard, Reader, Prompt Studio, Team)
+// Switch App Tabs (Landing, Storyboard, Reader, Prompt Studio, Team)
 function switchTab(tabName) {
   state.activeTab = tabName;
   document.querySelectorAll('.nav-tab').forEach(t => {
@@ -1087,15 +1339,251 @@ function switchTab(tabName) {
     m.classList.toggle('active', m.dataset.tab === tabName);
   });
 
-  document.getElementById('view-storyboard').style.display = tabName === 'storyboard' ? 'block' : 'none';
-  document.getElementById('view-reader').style.display = tabName === 'reader' ? 'block' : 'none';
-  document.getElementById('view-prompts').style.display = tabName === 'prompts' ? 'block' : 'none';
-  document.getElementById('view-team').style.display = tabName === 'team' ? 'block' : 'none';
+  const vLanding = document.getElementById('view-landing');
+  const vStoryboard = document.getElementById('view-storyboard');
+  const vReader = document.getElementById('view-reader');
+  const vPrompts = document.getElementById('view-prompts');
+  const vTeam = document.getElementById('view-team');
 
+  if (vLanding) vLanding.style.display = tabName === 'landing' ? 'block' : 'none';
+  if (vStoryboard) vStoryboard.style.display = tabName === 'storyboard' ? 'block' : 'none';
+  if (vReader) vReader.style.display = tabName === 'reader' ? 'block' : 'none';
+  if (vPrompts) vPrompts.style.display = tabName === 'prompts' ? 'block' : 'none';
+  if (vTeam) vTeam.style.display = tabName === 'team' ? 'block' : 'none';
+
+  if (tabName === 'landing') renderLandingShowcase();
   if (tabName === 'reader') renderReaderView();
   if (tabName === 'prompts') renderPromptStudio();
   if (tabName === 'team') renderTeamView();
 }
+
+// ==============================================================================
+// AUTHENTICATION & LANDING SHOWCASE CONTROLLER (JIYA & SAHIL)
+// ==============================================================================
+
+// Select login profile in modal (Jiya or Sahil)
+function selectLoginProfile(username) {
+  const chipJiya = document.getElementById('chip-jiya');
+  const chipSahil = document.getElementById('chip-sahil');
+  const userInp = document.getElementById('login-username');
+  const passInp = document.getElementById('login-password');
+
+  if (username === 'jiya') {
+    if (chipJiya) chipJiya.classList.add('selected');
+    if (chipSahil) chipSahil.classList.remove('selected');
+    if (userInp) userInp.value = 'jiya';
+  } else {
+    if (chipSahil) chipSahil.classList.add('selected');
+    if (chipJiya) chipJiya.classList.remove('selected');
+    if (userInp) userInp.value = 'sahil';
+  }
+  if (passInp) passInp.value = '44113290';
+}
+
+// Submit login form with credentials (username: jiya/sahil, password: 44113290)
+async function submitLogin() {
+  const userInp = document.getElementById('login-username');
+  const passInp = document.getElementById('login-password');
+  const rememberInp = document.getElementById('login-remember');
+  const submitBtn = document.getElementById('login-submit-btn');
+
+  const username = userInp ? userInp.value.trim().toLowerCase() : '';
+  const password = passInp ? passInp.value.trim() : '';
+
+  if (!username || !password) {
+    showToast('Please enter both username and password', 'error');
+    return;
+  }
+
+  try {
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying Credentials...';
+    }
+
+    const res = await API.login(username, password);
+
+    if (res.success && res.user) {
+      state.isLoggedIn = true;
+      state.currentUser = res.user;
+
+      const authData = JSON.stringify({
+        token: res.token,
+        user: res.user,
+        logged_in_at: new Date().toISOString()
+      });
+
+      if (rememberInp && rememberInp.checked) {
+        localStorage.setItem('anime_plot_auth', authData);
+      } else {
+        sessionStorage.setItem('anime_plot_auth', authData);
+      }
+
+      updateAuthUI();
+      closeModal('login-modal');
+      showToast(`Welcome, ${res.user.display_name}! (${res.user.role})`, 'success');
+      switchTab('storyboard');
+    } else {
+      showToast(res.error || 'Invalid credentials', 'error');
+    }
+  } catch (err) {
+    console.error('Login error:', err);
+    showToast(err.message || 'Login failed. Please check credentials.', 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Login & Enter Studio';
+    }
+  }
+}
+
+// Creator logout
+function logoutUser() {
+  localStorage.removeItem('anime_plot_auth');
+  sessionStorage.removeItem('anime_plot_auth');
+  state.isLoggedIn = false;
+  updateAuthUI();
+  switchTab('landing');
+  showToast('Logged out from Creator account', 'info');
+}
+
+// Handler for Landing Page Main CTA button
+function handleEnterStudioOrLogin() {
+  if (state.isLoggedIn) {
+    switchTab('storyboard');
+  } else {
+    openModal('login-modal');
+  }
+}
+
+// Render Public Landing Page Anime Stories Showcase
+function renderLandingShowcase() {
+  const container = document.getElementById('landing-stories-grid');
+  if (!container) return;
+
+  if (!state.projects || state.projects.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem 1.5rem; background: var(--bg-card); border-radius: 20px; border: 2px dashed var(--border-glass);">
+        <div style="font-size: 2.8rem; margin-bottom: 0.75rem;">🎬</div>
+        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">No Published Anime Stories Yet</h3>
+        <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 1.5rem auto;">
+          Director Jiya &amp; Manager Sahil can create the first anime story and publish it here for readers.
+        </p>
+        <button class="btn btn-primary" onclick="handleEnterStudioOrLogin()">
+          + Create First Anime Story
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '';
+
+  state.projects.forEach(project => {
+    const isPub = project.is_published !== false;
+    // Non-logged-in visitors see only published stories (or all if not filtered)
+    if (!state.isLoggedIn && !isPub) return;
+
+    const card = document.createElement('div');
+    card.className = 'showcase-card';
+
+    const poster = project.cover_image || '/assets/logo.jpg';
+
+    card.innerHTML = `
+      <div class="showcase-cover-wrap">
+        <img src="${poster}" class="showcase-cover-img" alt="${escapeHtml(project.title)}" loading="lazy" onclick="openLightbox('${poster}', '${escapeJs(project.title)}')">
+        <div class="showcase-badge-row">
+          <span class="showcase-genre-chip">${escapeHtml(project.genre || 'Action / Anime')}</span>
+          ${isPub ? '<span class="showcase-pub-badge">Published</span>' : '<span class="showcase-pub-badge" style="background: rgba(245, 158, 11, 0.85);">Draft</span>'}
+        </div>
+      </div>
+
+      <div class="showcase-content">
+        <div class="showcase-title-row">
+          <div>
+            <h3 class="showcase-title">${escapeHtml(project.title)}</h3>
+            ${project.tagline ? `<div class="showcase-tagline">"${escapeHtml(project.tagline)}"</div>` : ''}
+          </div>
+        </div>
+
+        <p class="showcase-synopsis">
+          ${escapeHtml(project.synopsis || 'An exciting original anime story created at Anime Plot Studio.')}
+        </p>
+
+        <div class="showcase-stats-row">
+          <span class="showcase-stat-item">
+            <strong>${project.total_parts || 1}</strong> Parts
+          </span>
+          <span class="showcase-stat-item">
+            <strong>${project.total_scenes || 0}</strong> Scenes
+          </span>
+          <span class="showcase-stat-item">
+            <strong>${project.total_images || 0}</strong> Visuals
+          </span>
+        </div>
+
+        <div class="showcase-actions-row">
+          <button class="btn btn-primary btn-sm showcase-read-btn" onclick="openReaderForProject(${project.id})">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Read Screenplay</span>
+          </button>
+          <button class="btn btn-secondary btn-sm showcase-studio-btn" onclick="openStudioForProject(${project.id})">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/></svg>
+            <span>Open in Studio</span>
+          </button>
+          ${state.isLoggedIn ? `
+            <button class="btn btn-secondary btn-sm" onclick="togglePublishProjectStatus(${project.id}, ${!isPub})" title="${isPub ? 'Hide from Landing' : 'Publish on Landing'}" style="padding: 0.4rem 0.65rem; font-size: 0.75rem;">
+              ${isPub ? 'Hide from Landing' : 'Show on Landing'}
+            </button>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  // If all projects were drafts and none visible to guest
+  if (container.children.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+        <p>No stories published to showcase yet. Creators can log in to publish stories.</p>
+      </div>
+    `;
+  }
+}
+
+// 1-Click: Open Screenplay Reader directly for a project from Landing
+async function openReaderForProject(projectId) {
+  await selectProject(projectId);
+  switchTab('reader');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// 1-Click: Open Story in Studio Workspace from Landing
+async function openStudioForProject(projectId) {
+  await selectProject(projectId);
+  switchTab('storyboard');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Toggle project published status on landing page
+async function togglePublishProjectStatus(projectId, newStatus) {
+  try {
+    await API.togglePublishProject(projectId, newStatus);
+    showToast(newStatus ? 'Story published to Landing Showcase!' : 'Story hidden from Landing page', 'info');
+    const projData = await API.getProjects();
+    state.projects = projData.projects || [];
+    renderLandingShowcase();
+    if (state.activeProject && state.activeProject.id === projectId) {
+      state.activeProject.is_published = newStatus;
+      renderProjectBanner();
+    }
+  } catch (err) {
+    showToast('Failed to update story status: ' + err.message, 'error');
+  }
+}
+
 
 // Event Listeners setup
 function initEventListeners() {
