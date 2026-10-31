@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# ANIME-PLOT STUDIO - Startup Script
+# ANIME-PLOT STUDIO - Production Startup Script (PM2 Managed)
 # ==============================================================================
 
 DIR="/home/gtu-itr/anime-story-studio"
@@ -9,36 +9,18 @@ export LD_LIBRARY_PATH="/home/gtu-itr/pgsql/usr/lib/x86_64-linux-gnu:${LD_LIBRAR
 
 cd "$DIR"
 
-# Check if anime-plot-studio is already running
-PID_FILE="$DIR/server.pid"
-if [ -f "$PID_FILE" ]; then
-  OLD_PID=$(cat "$PID_FILE")
-  if ps -p "$OLD_PID" > /dev/null 2>&1 && grep -q "server.js" "/proc/$OLD_PID/cmdline" 2>/dev/null; then
-    echo "[ANIME-PLOT STUDIO] Server is already running on PID: $OLD_PID"
-    echo "URL: http://127.0.0.1:4000"
-    exit 0
+if command -v pm2 >/dev/null 2>&1; then
+  if pm2 list | grep -q "anime-plot-studio"; then
+    pm2 restart anime-plot-studio
   else
-    rm -f "$PID_FILE"
+    pm2 start server.js --name "anime-plot-studio"
   fi
-fi
-
-mkdir -p "$DIR/logs"
-
-echo "[ANIME-PLOT STUDIO] Starting ANIME-PLOT STUDIO on port 4000..."
-nohup node server.js </dev/null >> "$DIR/logs/anime_studio.log" 2>&1 &
-SERVER_PID=$!
-disown $SERVER_PID 2>/dev/null || true
-echo "$SERVER_PID" > "$PID_FILE"
-
-sleep 2
-
-if ps -p $SERVER_PID > /dev/null; then
-  echo "[SUCCESS] ANIME-PLOT STUDIO is running!"
-  echo "URL: http://127.0.0.1:4000"
-  echo "PID: $SERVER_PID"
-  echo "Logs: $DIR/logs/anime_studio.log"
+  pm2 save
+  echo "[SUCCESS] ANIME-PLOT STUDIO is running under PM2!"
 else
-  echo "[ERROR] Failed to start server. Checking logs:"
-  cat "$DIR/logs/anime_studio.log"
-  exit 1
+  nohup node server.js </dev/null >> "$DIR/logs/anime_studio.log" 2>&1 &
+  echo "[SUCCESS] ANIME-PLOT STUDIO started with nohup!"
 fi
+
+echo "Local:  http://127.0.0.1:4000"
+echo "Public: https://anime.aceglory.in"
