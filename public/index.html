@@ -26,7 +26,7 @@
   <meta name="msapplication-TileImage" content="/assets/icon-192x192.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="/css/style.css?v=5">
+  <link rel="stylesheet" href="/css/style.css?v=6">
 </head>
 <body>
 
@@ -88,17 +88,17 @@
       </button>
 
       <!-- Guest Login Button (Shown when not logged in) -->
-      <button id="header-login-btn" class="btn btn-primary" onclick="openModal('login-modal')" title="Log in as Jiya (Founder) or Sahil (Manager)" style="display: none; background: linear-gradient(135deg, #db2777 0%, #7c3aed 100%);">
+      <button id="header-login-btn" class="btn btn-primary" onclick="openModal('login-modal')" title="Studio Login (Mewo & Bunny)" style="display: none; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); font-weight: 700;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
         <span>Studio Login</span>
       </button>
 
       <!-- Active Collaborator Switcher / Profile Pill -->
       <div class="collaborator-pill" id="header-user-pill" onclick="openModal('switch-team-modal')" title="Creator Profile (Click to switch)">
-        <div class="collaborator-avatar" id="current-user-avatar">J</div>
+        <div class="collaborator-avatar" id="current-user-avatar">M</div>
         <div>
-          <div class="collaborator-name" id="current-user-name">Jiya</div>
-          <div class="collaborator-role" id="current-user-role">Founder &amp; Director</div>
+          <div class="collaborator-name" id="current-user-name">Mewo</div>
+          <div class="collaborator-role" id="current-user-role">Founder &amp; Main Director</div>
         </div>
       </div>
 
@@ -126,35 +126,43 @@
   <main class="main-wrapper">
 
     <!-- =========================================================================
-         TAB 0: PUBLIC LANDING PAGE & ANIME SHOWCASE
+         TAB 0: PUBLIC LANDING PAGE & ANIME SHOWCASE (COMPANY PORTAL)
          ========================================================================= -->
     <div id="view-landing">
       <!-- Hero Section -->
       <section class="landing-hero glass-panel">
         <div class="landing-hero-content">
-          <div class="landing-badge">OFFICIAL ANIME CREATIVE PLATFORM</div>
+          <div class="landing-badge">OFFICIAL ANIME PRODUCTION &amp; STORYBOARD STUDIO</div>
           <img src="/assets/logo.jpg" alt="ANIME PLOT STUDIO Logo" class="landing-hero-logo" title="ANIME PLOT STUDIO">
           <h1 class="landing-title">ANIME PLOT STUDIO</h1>
           <p class="landing-subtitle">
-            Original Anime Series Production Hub • Dynamic Screenplays • Storyboards • AI Visual Art
+            Next-Generation Anime Production &amp; Visual Storyboard Studio • Transforming narrative concepts into episodic story arcs, AI visual keyframes &amp; cinematic screenplays.
           </p>
 
-          <!-- Studio Leadership: Founder Jiya & Manager Sahil -->
+          <!-- Studio Metrics / Highlights Bar -->
+          <div class="studio-metric-pills">
+            <span class="studio-pill">👑 <strong>Director</strong> Mewo</span>
+            <span class="studio-pill">🎬 <strong>Manager</strong> Bunny</span>
+            <span class="studio-pill">🎨 <strong>Visuals</strong> Midjourney &amp; SDXL</span>
+            <span class="studio-pill">⚡ <strong>Status</strong> Active Production</span>
+          </div>
+
+          <!-- Studio Leadership: Founder Mewo & Manager Bunny -->
           <div class="founders-row">
-            <div class="founder-card jiya-card">
+            <div class="founder-card mewo-card">
               <div class="founder-avatar" style="background: #db2777;">👑</div>
               <div class="founder-info">
-                <div class="founder-name">Jiya</div>
+                <div class="founder-name">Mewo</div>
                 <div class="founder-role">Founder &amp; Main Director</div>
-                <div class="founder-desc">Mastermind behind story arcs, anime plot scripts &amp; scene vision</div>
+                <div class="founder-desc">Mastermind behind anime story arcs, character lore, emotional plot scripts &amp; scene vision.</div>
               </div>
             </div>
-            <div class="founder-card sahil-card">
+            <div class="founder-card bunny-card">
               <div class="founder-avatar" style="background: #4f46e5;">🎬</div>
               <div class="founder-info">
-                <div class="founder-name">Sahil</div>
+                <div class="founder-name">Bunny</div>
                 <div class="founder-role">Studio Manager &amp; Art Producer</div>
-                <div class="founder-desc">Executes AI visual prompts, generates artwork &amp; manages publications</div>
+                <div class="founder-desc">Executes AI visual prompts, generates artwork in Midjourney/SD, manages production &amp; publications.</div>
               </div>
             </div>
           </div>
@@ -168,6 +176,54 @@
             <button class="btn btn-secondary btn-lg" onclick="scrollToSection('landing-published-stories')" style="font-size: 1rem; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 14px;">
               Browse Published Stories
             </button>
+            <button class="btn btn-secondary btn-lg" onclick="scrollToSection('landing-company-pipeline')" style="font-size: 1rem; padding: 0.85rem 1.5rem; font-weight: 700; border-radius: 14px;">
+              Production Pipeline
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Company Capabilities & Production Pipeline Section -->
+      <section class="section-container" id="landing-company-pipeline" style="margin-top: 2.5rem;">
+        <div class="section-header-row">
+          <div>
+            <div class="section-step-badge">STUDIO ARCHITECTURE • 4 PILLARS</div>
+            <h2 class="section-title">End-to-End Anime Production Pipeline</h2>
+            <p class="section-desc">From initial concept to full screenplay and keyframe rendering, Anime Plot Studio orchestrates every phase.</p>
+          </div>
+        </div>
+
+        <div class="company-pipeline-grid">
+          <div class="pipeline-card">
+            <div class="pipeline-icon" style="background: #e0e7ff; color: #4338ca;">💡</div>
+            <div class="pipeline-step-num">PILLAR 1</div>
+            <h3 class="pipeline-title">Story Conception &amp; Lore</h3>
+            <p class="pipeline-desc">Architecting deep anime plot synopses, world-building rules, anime aesthetics (Mappa, Ufotable, Shinkai), and character emotional conflicts.</p>
+            <div class="pipeline-tag">Director Mewo</div>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="pipeline-icon" style="background: #fce7f3; color: #be185d;">📑</div>
+            <div class="pipeline-step-num">PILLAR 2</div>
+            <h3 class="pipeline-title">Episodic Parts &amp; Arcs</h3>
+            <p class="pipeline-desc">Breaking storylines into distinct sequential episodes, narrative arcs, and cliffhangers for seasonal pacing and episodic depth.</p>
+            <div class="pipeline-tag">Episodic Architecture</div>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="pipeline-icon" style="background: #ede9fe; color: #6d28d9;">🎨</div>
+            <div class="pipeline-step-num">PILLAR 3</div>
+            <h3 class="pipeline-title">AI Prompting &amp; 4K Art</h3>
+            <p class="pipeline-desc">1-Tap copy of calibrated visual prompts for Midjourney, Stable Diffusion &amp; Niji, paired with direct high-resolution art uploading.</p>
+            <div class="pipeline-tag">Producer Bunny</div>
+          </div>
+
+          <div class="pipeline-card">
+            <div class="pipeline-icon" style="background: #e0f2fe; color: #0369a1;">📖</div>
+            <div class="pipeline-step-num">PILLAR 4</div>
+            <h3 class="pipeline-title">Dynamic Screenplay Reader</h3>
+            <p class="pipeline-desc">Interactive script reading engine connecting scene dialogue, actions, sound cues, and visual frames into a unified cinematic format.</p>
+            <div class="pipeline-tag">Public &amp; Studio</div>
           </div>
         </div>
       </section>
@@ -178,7 +234,7 @@
           <div>
             <div class="section-step-badge">PUBLIC SHOWCASE • ORIGINAL STORIES</div>
             <h2 class="section-title">Published Anime Stories &amp; Series Plots</h2>
-            <p class="section-desc">Original anime story concepts and visual scene artworks created and published by Director Jiya &amp; Manager Sahil.</p>
+            <p class="section-desc">Original anime story concepts and visual scene artworks created and published by Director Mewo &amp; Manager Bunny.</p>
           </div>
         </div>
 
@@ -187,6 +243,117 @@
           <!-- Rendered by renderLandingShowcase() in app.js -->
         </div>
       </section>
+
+      <!-- =========================================================================
+           STUDIO COMPANY FOOTER
+           ========================================================================= -->
+      <footer class="studio-company-footer">
+        <div class="footer-inner">
+          <div class="footer-top-grid">
+            <!-- Col 1: Studio Identity -->
+            <div class="footer-col footer-col-brand">
+              <div class="footer-brand-header">
+                <img src="/assets/logo.jpg" alt="ANIME PLOT STUDIO Logo" class="footer-brand-logo">
+                <div>
+                  <div class="footer-brand-title">ANIME PLOT STUDIO</div>
+                  <div class="footer-brand-tag">Visual Storyboard &amp; Anime Production</div>
+                </div>
+              </div>
+              <p class="footer-brand-desc">
+                Next-generation anime production studio bridging creative narrative brilliance with AI-assisted visual keyframing. Crafting original episodic anime series, dynamic storyboards, and cinematic screenplays.
+              </p>
+              <div class="footer-badge-list">
+                <span class="footer-chip">🌐 anime.aceglory.in</span>
+                <span class="footer-chip">⚡ Version 2.0</span>
+                <span class="footer-chip">🛡️ Cloudflare Secured</span>
+              </div>
+            </div>
+
+            <!-- Col 2: Studio Leadership -->
+            <div class="footer-col">
+              <h4 class="footer-col-title">Studio Leadership</h4>
+              <ul class="footer-links-list">
+                <li>
+                  <div class="footer-leader-item">
+                    <span class="footer-leader-icon" style="background: #db2777;">👑</span>
+                    <div>
+                      <strong>Mewo</strong>
+                      <span>Founder &amp; Main Director</span>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="footer-leader-item">
+                    <span class="footer-leader-icon" style="background: #4f46e5;">🎬</span>
+                    <div>
+                      <strong>Bunny</strong>
+                      <span>Studio Manager &amp; Art Producer</span>
+                    </div>
+                  </div>
+                </li>
+                <li style="margin-top: 0.75rem;">
+                  <button class="footer-link-btn" onclick="openModal('login-modal')">
+                    🔑 Creator Studio Login
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            <!-- Col 3: Production Pipeline -->
+            <div class="footer-col">
+              <h4 class="footer-col-title">Production Pipeline</h4>
+              <ul class="footer-links-list">
+                <li><a href="javascript:void(0)" onclick="handleEnterStudioOrLogin()">1. Story Conception &amp; Plotting</a></li>
+                <li><a href="javascript:void(0)" onclick="handleEnterStudioOrLogin()">2. Episodic Parts &amp; Arcs</a></li>
+                <li><a href="javascript:void(0)" onclick="handleEnterStudioOrLogin()">3. Scene Prompting &amp; AI Art</a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('reader')">4. Cinematic Screenplay Reader</a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('prompts')">5. Visual Prompt Studio Presets</a></li>
+              </ul>
+            </div>
+
+            <!-- Col 4: Studio Details & HQ -->
+            <div class="footer-col">
+              <h4 class="footer-col-title">Studio Details</h4>
+              <div class="footer-details-box">
+                <div class="footer-detail-row">
+                  <span class="detail-label">Studio Platform:</span>
+                  <span class="detail-val">Anime Plot Studio</span>
+                </div>
+                <div class="footer-detail-row">
+                  <span class="detail-label">Network Domain:</span>
+                  <span class="detail-val">anime.aceglory.in</span>
+                </div>
+                <div class="footer-detail-row">
+                  <span class="detail-label">Infrastructure:</span>
+                  <span class="detail-val">PostgreSQL + Node.js + PWA</span>
+                </div>
+                <div class="footer-detail-row">
+                  <span class="detail-label">Art Engines:</span>
+                  <span class="detail-val">Midjourney v6, SDXL, Niji</span>
+                </div>
+                <div class="footer-detail-row">
+                  <span class="detail-label">Production Status:</span>
+                  <span class="detail-val" style="color: #10b981; font-weight: 700;">🟢 Active Production</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Copyright Bar -->
+          <div class="footer-bottom-bar">
+            <div class="footer-copyright-text">
+              © 2026 <strong>ANIME PLOT STUDIO</strong>. All Rights Reserved. Founded by <strong>Mewo</strong> &amp; Managed by <strong>Bunny</strong>.
+            </div>
+            <div class="footer-bottom-links">
+              <span>Original Anime Series</span>
+              <span>•</span>
+              <span>Screenplay Platform</span>
+              <span>•</span>
+              <span>Production Pipeline</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
 
     <!-- =========================================================================
@@ -744,7 +911,7 @@
     </div>
   </div>
 
-  <!-- 4. Simplified Scene Creator Modal: Single Text Box for Director Jiya -->
+  <!-- 4. Simplified Scene Creator Modal: Single Text Box for Director Mewo -->
   <div class="modal-backdrop" id="scene-edit-modal">
     <div class="modal-window" style="max-width: 680px;">
       <div class="modal-header">
@@ -754,7 +921,7 @@
           </div>
           <div>
             <h3 class="modal-title" id="scene-modal-heading">Add Scene (Seen)</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Director Jiya: Just paste your entire scene description &amp; prompts below</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Director Mewo: Just paste your entire scene description &amp; prompts below</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeModal('scene-edit-modal')">&times;</button>
@@ -775,7 +942,7 @@ Heavy rain falls over Shibuya crossing as Ren confronts Kaoru. Lightning strikes
 Kaoru: 'You cannot rewrite destiny.'
 Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning storm, cyber samurai with glowing katana, Makoto Shinkai lighting, Ufotable action, 8k resolution" style="font-size: 0.95rem; line-height: 1.6; min-height: 190px; border-radius: 14px; border: 2px solid rgba(219, 39, 119, 0.25);"></textarea>
             <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem;">
-              <span>⚡</span> <span>Sahil (Manager) can copy this prompt with 1 tap to generate art in Midjourney or Stable Diffusion.</span>
+              <span>⚡</span> <span>Bunny (Manager) can copy this prompt with 1 tap to generate art in Midjourney or Stable Diffusion.</span>
             </div>
           </div>
         </form>
@@ -789,7 +956,7 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
     </div>
   </div>
 
-  <!-- 4B. Creator Login Modal (Jiya & Sahil) -->
+  <!-- 4B. Creator Login Modal (Mewo & Bunny) -->
   <div class="modal-backdrop" id="login-modal">
     <div class="modal-window login-window" style="max-width: 440px;">
       <div class="modal-header" style="justify-content: space-between;">
@@ -805,18 +972,18 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
       <div class="modal-body">
         <div class="login-quick-select-label">Select Creator Profile:</div>
         <div class="login-role-chips">
-          <button type="button" class="login-role-chip selected" id="chip-jiya" onclick="selectLoginProfile('jiya')">
+          <button type="button" class="login-role-chip" id="chip-mewo" onclick="selectLoginProfile('mewo')">
             <span class="role-icon" style="background: #db2777;">👑</span>
             <div>
-              <div class="role-name">Jiya</div>
+              <div class="role-name">Mewo</div>
               <div class="role-sub">Founder &amp; Director</div>
             </div>
           </button>
-          <button type="button" class="login-role-chip" id="chip-sahil" onclick="selectLoginProfile('sahil')">
+          <button type="button" class="login-role-chip" id="chip-bunny" onclick="selectLoginProfile('bunny')">
             <span class="role-icon" style="background: #4f46e5;">🎬</span>
             <div>
-              <div class="role-name">Sahil</div>
-              <div class="role-sub">Studio Manager</div>
+              <div class="role-name">Bunny</div>
+              <div class="role-sub">Studio Manager &amp; Art Producer</div>
             </div>
           </button>
         </div>
@@ -824,11 +991,11 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
         <form id="login-form" onsubmit="event.preventDefault(); submitLogin();" style="margin-top: 1.25rem;">
           <div class="form-group">
             <label class="form-label" style="font-weight: 700;">Username</label>
-            <input type="text" id="login-username" class="form-input" value="jiya" placeholder="jiya or sahil" required>
+            <input type="text" id="login-username" class="form-input" value="" placeholder="Username (mewo or bunny)" required autocomplete="username">
           </div>
           <div class="form-group" style="margin-top: 0.85rem;">
             <label class="form-label" style="font-weight: 700;">Password</label>
-            <input type="password" id="login-password" class="form-input" value="44113290" placeholder="Enter password (44113290)" required>
+            <input type="password" id="login-password" class="form-input" value="" placeholder="Enter password (e.g. 44113290)" required autocomplete="current-password">
           </div>
           <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.85rem;">
             <input type="checkbox" id="login-remember" checked style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary);">
@@ -1021,9 +1188,9 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=5"></script>
-  <script src="/js/components.js?v=5"></script>
-  <script src="/js/app.js?v=5"></script>
+  <script src="/js/api.js?v=6"></script>
+  <script src="/js/components.js?v=6"></script>
+  <script src="/js/app.js?v=6"></script>
 
   <script>
     // Hook up switch team modal population

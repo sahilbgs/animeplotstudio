@@ -9,8 +9,8 @@ const state = {
   activeTab: 'landing',
   isLoggedIn: false,
   currentUser: {
-    username: 'jiya',
-    display_name: 'Jiya',
+    username: 'mewo',
+    display_name: 'Mewo',
     role: 'Founder & Main Director',
     avatar_color: '#db2777'
   },
@@ -710,9 +710,9 @@ function renderScenesView() {
       </div>
 
       <div class="scene-body">
-        <!-- Sahil Manager Quick Actions: Copy AI Prompt & Upload Art -->
+        <!-- Bunny Manager Quick Actions: Copy AI Prompt & Upload Art -->
         <div class="scene-manager-bar">
-          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Stable Diffusion">
+          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Stable Diffusion">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             <span>Copy AI Prompt</span>
           </button>
@@ -737,7 +737,7 @@ function renderScenesView() {
         <div class="prompt-box-card">
           <div class="prompt-box-header">
             <span class="prompt-label">Visual Generation Prompt</span>
-            <button class="copy-prompt-btn" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})">
+            <button class="copy-prompt-btn" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})">
               ${ICONS.copy} Copy Prompt
             </button>
           </div>
@@ -764,7 +764,7 @@ function renderScenesView() {
         ` : ''}
 
         <div class="scene-footer">
-          <span>By: <strong>${escapeHtml(scene.created_by || 'Director Jiya')}</strong></span>
+          <span>By: <strong>${escapeHtml(scene.created_by || 'Director Mewo')}</strong></span>
           <div class="scene-action-buttons">
             <button class="btn-icon" title="Edit Scene Details" onclick="openEditSceneModal(${scene.id})">
               ${ICONS.edit}
@@ -781,11 +781,12 @@ function renderScenesView() {
   });
 }
 
-// 1-Tap Copy Scene Prompt for Sahil (AI Art Producer)
-function copyScenePromptForSahil(promptText, sceneNum) {
+// 1-Tap Copy Scene Prompt for Bunny (AI Art Producer)
+function copyScenePromptForBunny(promptText, sceneNum) {
   copyToClipboard(promptText, `Scene ${sceneNum} Prompt`);
-  showToast(`Scene ${sceneNum} Prompt copied! Sahil can paste in Midjourney/SD.`, 'success');
+  showToast(`Scene ${sceneNum} Prompt copied! Bunny can paste in Midjourney/SD.`, 'success');
 }
+const copyScenePromptForSahil = copyScenePromptForBunny;
 
 // Render Screenplay Reader View
 function renderReaderView() {
@@ -1068,10 +1069,10 @@ async function submitNewPart() {
 }
 
 // ==============================================================================
-// STEP 3: SIMPLE SCENE CREATION & EDITING (DIRECTOR JIYA & MANAGER SAHIL)
+// STEP 3: SIMPLE SCENE CREATION & EDITING (DIRECTOR MEWO & MANAGER BUNNY)
 // ==============================================================================
 
-// Open Create Scene Modal (Single Text Box for Director Jiya)
+// Open Create Scene Modal (Single Text Box for Director Mewo)
 function openCreateSceneModal() {
   if (!state.activePart) {
     showToast('Please select or create a Part first', 'info');
@@ -1116,7 +1117,7 @@ function openEditSceneModal(sceneId) {
   openModal('scene-edit-modal');
 }
 
-// Submit Scene Form (Pure Single Textbox for Director Jiya)
+// Submit Scene Form (Pure Single Textbox for Director Mewo)
 async function submitSceneForm() {
   const sceneId = document.getElementById('edit-scene-id')?.value || '';
   const unified = document.getElementById('scene-unified-input')?.value?.trim() || '';
@@ -1163,7 +1164,7 @@ async function submitSceneForm() {
     narrative_script: script,
     dialogue: '',
     status: 'Prompt Ready',
-    created_by: state.currentUser ? state.currentUser.display_name : 'Director Jiya'
+    created_by: state.currentUser ? state.currentUser.display_name : 'Director Mewo'
   };
 
   try {
@@ -1172,7 +1173,7 @@ async function submitSceneForm() {
       showToast('Scene updated in studio!', 'success');
     } else {
       await API.createScene(state.activePart.id, payload);
-      showToast('New Scene added! Ready for Sahil to copy prompt & generate art.', 'success');
+      showToast('New Scene added! Ready for Bunny to copy prompt & generate art.', 'success');
     }
 
     closeModal('scene-edit-modal');
@@ -1246,7 +1247,7 @@ async function submitAddFriend() {
 function switchTab(tabName) {
   // If user tries to open studio workspace without logging in, prompt login
   if (tabName === 'storyboard' && !state.isLoggedIn) {
-    showToast('Please log in as Director Jiya or Manager Sahil to enter Studio', 'info');
+    showToast('Please log in as Director Mewo or Manager Bunny to enter Studio', 'info');
     openModal('login-modal');
     return;
   }
@@ -1283,29 +1284,34 @@ function switchTab(tabName) {
 }
 
 // ==============================================================================
-// AUTHENTICATION & LANDING SHOWCASE CONTROLLER (JIYA & SAHIL)
+// AUTHENTICATION & LANDING SHOWCASE CONTROLLER (MEWO & BUNNY)
 // ==============================================================================
 
-// Select login profile in modal (Jiya or Sahil)
+// Select login profile in modal (Mewo or Bunny)
 function selectLoginProfile(username) {
-  const chipJiya = document.getElementById('chip-jiya');
-  const chipSahil = document.getElementById('chip-sahil');
+  const chipMewo = document.getElementById('chip-mewo');
+  const chipBunny = document.getElementById('chip-bunny');
   const userInp = document.getElementById('login-username');
   const passInp = document.getElementById('login-password');
 
-  if (username === 'jiya') {
-    if (chipJiya) chipJiya.classList.add('selected');
-    if (chipSahil) chipSahil.classList.remove('selected');
-    if (userInp) userInp.value = 'jiya';
+  if (username === 'mewo' || username === 'jiya') {
+    if (chipMewo) chipMewo.classList.add('selected');
+    if (chipBunny) chipBunny.classList.remove('selected');
+    if (userInp) userInp.value = 'mewo';
   } else {
-    if (chipSahil) chipSahil.classList.add('selected');
-    if (chipJiya) chipJiya.classList.remove('selected');
-    if (userInp) userInp.value = 'sahil';
+    if (chipBunny) chipBunny.classList.add('selected');
+    if (chipMewo) chipMewo.classList.remove('selected');
+    if (userInp) userInp.value = 'bunny';
   }
-  if (passInp) passInp.value = '44113290';
+  // User explicitly asked: "in login page dont use pree filed pasword and username ok"
+  // So DO NOT fill password! Clear it and focus password input so user can type it.
+  if (passInp) {
+    passInp.value = '';
+    passInp.focus();
+  }
 }
 
-// Submit login form with credentials (username: jiya/sahil, password: 44113290)
+// Submit login form with credentials (username: mewo/bunny, password: 44113290)
 async function submitLogin() {
   const userInp = document.getElementById('login-username');
   const passInp = document.getElementById('login-password');
@@ -1392,7 +1398,7 @@ function renderLandingShowcase() {
         <div style="font-size: 2.8rem; margin-bottom: 0.75rem;">🎬</div>
         <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">No Published Anime Stories Yet</h3>
         <p style="color: var(--text-muted); max-width: 520px; margin: 0 auto 1.5rem auto;">
-          Director Jiya &amp; Manager Sahil can create the first anime story and publish it here for readers.
+          Director Mewo &amp; Manager Bunny can create the first anime story and publish it here for readers.
         </p>
         <button class="btn btn-primary" onclick="handleEnterStudioOrLogin()">
           + Create First Anime Story

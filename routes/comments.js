@@ -32,7 +32,7 @@ router.post('/scene/:sceneId', async (req, res) => {
       RETURNING *
     `, [
       sceneId,
-      author_name || 'Sahil',
+      author_name || 'Bunny',
       comment_text.trim(),
       comment_type || 'feedback'
     ]);

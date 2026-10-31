@@ -13,27 +13,34 @@ router.post('/login', async (req, res) => {
     username = username.trim().toLowerCase();
     password = password.trim();
 
-    // Support 'mewo' as alias for Director Jiya
-    if (username === 'mewo') {
-      username = 'jiya';
-    }
+    // Normalize usernames (support mewo/jiya for Director, bunny/sahil for Manager)
+    if (username === 'jiya') username = 'mewo';
+    if (username === 'sahil') username = 'bunny';
 
     // Query user from PostgreSQL
-    const userResult = await pool.query(
+    let userResult = await pool.query(
       'SELECT id, username, display_name, role, avatar_color, avatar_emoji, password FROM users WHERE LOWER(username) = $1',
       [username]
     );
 
+    // If not found with normalized, try fallback
+    if (userResult.rows.length === 0) {
+      userResult = await pool.query(
+        'SELECT id, username, display_name, role, avatar_color, avatar_emoji, password FROM users WHERE LOWER(username) IN ($1, $2)',
+        [username === 'mewo' ? 'jiya' : 'mewo', username === 'bunny' ? 'sahil' : 'bunny']
+      );
+    }
+
     if (userResult.rows.length === 0) {
       return res.status(401).json({
         success: false,
-        error: 'User not found. Valid creators are "jiya" (Founder & Director) and "sahil" (Manager).'
+        error: 'Creator account not found. Valid creators are "mewo" (Founder & Main Director) and "bunny" (Studio Manager).'
       });
     }
 
     const user = userResult.rows[0];
 
-    // Verify password (both jiya and sahil password is 44113290)
+    // Verify password (password for both creators is 44113290)
     const expectedPass = user.password || '44113290';
     if (password !== expectedPass && password !== '44113290') {
       return res.status(401).json({
@@ -55,7 +62,7 @@ router.post('/login', async (req, res) => {
         display_name: user.display_name,
         role: user.role,
         avatar_color: user.avatar_color,
-        avatar_emoji: user.avatar_emoji || (user.username === 'jiya' ? '👑' : '🎬')
+        avatar_emoji: user.avatar_emoji || (user.username === 'mewo' || user.username === 'jiya' ? '👑' : '🎬')
       }
     });
   } catch (err) {
@@ -68,7 +75,7 @@ router.post('/login', async (req, res) => {
 router.get('/creators', async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT id, username, display_name, role, avatar_color, avatar_emoji FROM users WHERE username IN ('jiya', 'sahil') ORDER BY CASE WHEN username='jiya' THEN 1 ELSE 2 END"
+      "SELECT id, username, display_name, role, avatar_color, avatar_emoji FROM users WHERE username IN ('mewo', 'bunny') ORDER BY CASE WHEN username='mewo' THEN 1 ELSE 2 END"
     );
     res.json({ success: true, creators: result.rows });
   } catch (err) {

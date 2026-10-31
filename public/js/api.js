@@ -213,7 +213,7 @@ const API = {
     return this.request('/prompt-presets');
   },
 
-  // Auth & Creators (Jiya Founder & Sahil Manager)
+  // Auth & Creators (Mewo Founder & Bunny Manager)
   async login(username, password) {
     return this.request('/auth/login', {
       method: 'POST',

@@ -58,7 +58,7 @@ const upload = multer({
 router.post('/scene/:sceneId', upload.array('images', 10), async (req, res) => {
   try {
     const sceneId = req.params.sceneId;
-    const uploadedBy = req.body.uploaded_by || 'Sahil';
+    const uploadedBy = req.body.uploaded_by || 'Bunny';
     const caption = req.body.caption || '';
     const setPrimary = req.body.set_primary === 'true';
 
@@ -131,7 +131,7 @@ router.post('/scene/:sceneId', upload.array('images', 10), async (req, res) => {
 router.post('/part/:partId', upload.array('images', 10), async (req, res) => {
   try {
     const partId = req.params.partId;
-    const uploadedBy = req.body.uploaded_by || 'Sahil';
+    const uploadedBy = req.body.uploaded_by || 'Bunny';
     const caption = req.body.caption || '';
     const setCover = req.body.set_cover === 'true';
 
