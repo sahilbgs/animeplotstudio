@@ -13,6 +13,11 @@ router.post('/login', async (req, res) => {
     username = username.trim().toLowerCase();
     password = password.trim();
 
+    // Support 'mewo' as alias for Director Jiya
+    if (username === 'mewo') {
+      username = 'jiya';
+    }
+
     // Query user from PostgreSQL
     const userResult = await pool.query(
       'SELECT id, username, display_name, role, avatar_color, avatar_emoji, password FROM users WHERE LOWER(username) = $1',

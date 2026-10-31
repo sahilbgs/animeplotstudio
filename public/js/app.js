@@ -78,18 +78,24 @@ function updateAuthUI() {
   const loginBtn = document.getElementById('header-login-btn');
   const userPill = document.getElementById('header-user-pill');
   const logoutBtn = document.getElementById('header-logout-btn');
+  const storySelector = document.getElementById('header-story-selector-wrap');
+  const createStoryBtn = document.getElementById('header-create-story-btn');
   const landingCtaText = document.getElementById('landing-main-cta-text');
 
   if (state.isLoggedIn && state.currentUser) {
     if (loginBtn) loginBtn.style.display = 'none';
     if (userPill) userPill.style.display = 'flex';
     if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    if (storySelector) storySelector.style.display = 'flex';
+    if (createStoryBtn) createStoryBtn.style.display = 'inline-flex';
     if (landingCtaText) landingCtaText.textContent = `Enter Studio Workspace (${state.currentUser.display_name})`;
     updateUserHeaderDisplay();
   } else {
     if (loginBtn) loginBtn.style.display = 'inline-flex';
     if (userPill) userPill.style.display = 'none';
     if (logoutBtn) logoutBtn.style.display = 'none';
+    if (storySelector) storySelector.style.display = 'none';
+    if (createStoryBtn) createStoryBtn.style.display = 'none';
     if (landingCtaText) landingCtaText.textContent = 'Enter Studio Workspace (Creator Login)';
   }
 }
@@ -687,6 +693,7 @@ function renderScenesView() {
     card.className = 'scene-card';
     const primaryImgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
     const hasArt = scene.primary_image && !scene.primary_image.includes('shibuya_rain_establishing.svg');
+    const promptToCopy = scene.visual_prompt || scene.narrative_script || '';
 
     card.innerHTML = `
       <div class="scene-visual-wrap">
@@ -705,7 +712,7 @@ function renderScenesView() {
       <div class="scene-body">
         <!-- Sahil Manager Quick Actions: Copy AI Prompt & Upload Art -->
         <div class="scene-manager-bar">
-          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(scene.visual_prompt)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Stable Diffusion">
+          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Stable Diffusion">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             <span>Copy AI Prompt</span>
           </button>
@@ -730,11 +737,11 @@ function renderScenesView() {
         <div class="prompt-box-card">
           <div class="prompt-box-header">
             <span class="prompt-label">Visual Generation Prompt</span>
-            <button class="copy-prompt-btn" onclick="copyScenePromptForSahil('${escapeJs(scene.visual_prompt)}', ${scene.scene_number})">
+            <button class="copy-prompt-btn" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})">
               ${ICONS.copy} Copy Prompt
             </button>
           </div>
-          <div class="prompt-text-display">${escapeHtml(scene.visual_prompt)}</div>
+          <div class="prompt-text-display">${escapeHtml(promptToCopy)}</div>
           ${scene.negative_prompt ? `
             <div class="prompt-negative-text">
               <strong>Negative:</strong> ${escapeHtml(scene.negative_prompt)}
@@ -1064,7 +1071,7 @@ async function submitNewPart() {
 // STEP 3: SIMPLE SCENE CREATION & EDITING (DIRECTOR JIYA & MANAGER SAHIL)
 // ==============================================================================
 
-// Open Create Scene Modal
+// Open Create Scene Modal (Single Text Box for Director Jiya)
 function openCreateSceneModal() {
   if (!state.activePart) {
     showToast('Please select or create a Part first', 'info');
@@ -1073,24 +1080,14 @@ function openCreateSceneModal() {
   const partNum = state.activePart ? state.activePart.part_number : 1;
   const nextSceneNum = state.scenes ? state.scenes.length + 1 : 1;
 
-  document.getElementById('scene-modal-heading').textContent = `Add Scene ${nextSceneNum} to Part ${partNum}`;
-  document.getElementById('edit-scene-id').value = '';
-  document.getElementById('scene-form').reset();
+  const heading = document.getElementById('scene-modal-heading');
+  if (heading) heading.textContent = `Add Scene ${nextSceneNum} to Part ${partNum}`;
 
-  const titleInp = document.getElementById('scene-title-input');
-  if (titleInp) titleInp.value = `Scene ${nextSceneNum}`;
+  const editIdInp = document.getElementById('edit-scene-id');
+  if (editIdInp) editIdInp.value = '';
 
   const unifiedInp = document.getElementById('scene-unified-input');
   if (unifiedInp) unifiedInp.value = '';
-
-  const promptInp = document.getElementById('scene-prompt-input');
-  if (promptInp) promptInp.value = '';
-
-  const advFields = document.getElementById('scene-advanced-fields');
-  if (advFields) advFields.style.display = 'none';
-
-  const toggleBtn = document.getElementById('toggle-advanced-scene-btn');
-  if (toggleBtn) toggleBtn.textContent = '+ Show Optional Camera & Atmospheric Settings';
 
   openModal('scene-edit-modal');
 }
@@ -1100,156 +1097,72 @@ function openEditSceneModal(sceneId) {
   const scene = state.scenes.find(s => s.id === sceneId);
   if (!scene) return;
 
-  document.getElementById('scene-modal-heading').textContent = `Edit Scene ${scene.scene_number}`;
-  document.getElementById('edit-scene-id').value = scene.id;
-  document.getElementById('scene-title-input').value = scene.title || '';
+  const heading = document.getElementById('scene-modal-heading');
+  if (heading) heading.textContent = `Edit Scene ${scene.scene_number}`;
 
-  // Combine narrative script and prompt into unified input for seamless 1-box editing
+  const editIdInp = document.getElementById('edit-scene-id');
+  if (editIdInp) editIdInp.value = scene.id;
+
   const unifiedInp = document.getElementById('scene-unified-input');
   if (unifiedInp) {
     let combined = '';
     if (scene.narrative_script) combined += scene.narrative_script + '\n\n';
-    if (scene.visual_prompt) combined += 'Prompt: ' + scene.visual_prompt;
+    if (scene.visual_prompt && !combined.includes(scene.visual_prompt)) {
+      combined += 'Prompt: ' + scene.visual_prompt;
+    }
     unifiedInp.value = combined.trim() || scene.visual_prompt || '';
   }
-
-  document.getElementById('scene-prompt-input').value = scene.visual_prompt || '';
-  document.getElementById('scene-location-input').value = scene.location || '';
-  document.getElementById('scene-time-input').value = scene.time_of_day || '';
-  document.getElementById('scene-mood-input').value = scene.mood || '';
-  document.getElementById('scene-camera-input').value = scene.camera_angle || '';
-  document.getElementById('scene-negative-input').value = scene.negative_prompt || 'low quality, blurry, deformed hands, extra limbs, bad anatomy, text, watermark';
-  document.getElementById('scene-script-input').value = scene.narrative_script || '';
-  document.getElementById('scene-dialogue-input').value = scene.dialogue || '';
-  document.getElementById('scene-status-input').value = scene.status || 'Prompt Ready';
 
   openModal('scene-edit-modal');
 }
 
-// Single-box unified input listener: Jiya pastes entire scene description & prompts
-function onUnifiedSceneInput(val) {
-  if (!val) return;
-  const promptInp = document.getElementById('scene-prompt-input');
-  const titleInp = document.getElementById('scene-title-input');
-
-  // If user included "Prompt: ..."
-  const promptMatch = val.match(/(?:prompt|visual\s*prompt|midjourney|sd)[:\-]\s*([^\n\r]+(?:[\n\r]+[^\n\r]+)*)/i);
-  if (promptMatch && promptMatch[1]) {
-    if (promptInp) promptInp.value = promptMatch[1].trim();
-  } else if (promptInp && (!promptInp.value || promptInp.value.length < 10)) {
-    promptInp.value = val.trim();
-  }
-
-  // Auto-detect title from first line if empty
-  if (titleInp && (!titleInp.value || titleInp.value.startsWith('Scene '))) {
-    const lines = val.trim().split('\n');
-    const firstLine = lines[0].trim();
-    if (firstLine.length > 3 && firstLine.length < 50 && !/^(prompt|negative)/i.test(firstLine)) {
-      titleInp.value = firstLine.replace(/^(scene\s*\d*[:\-]?\s*)/i, '');
-    }
-  }
-}
-
-// Auto-Split Scene Input (Smart Parser for Director Jiya)
-function autoSplitSceneInput() {
-  const unified = document.getElementById('scene-unified-input');
-  const titleInp = document.getElementById('scene-title-input');
-  const promptInp = document.getElementById('scene-prompt-input');
-  const scriptInp = document.getElementById('scene-script-input');
-  const dialogueInp = document.getElementById('scene-dialogue-input');
-
-  if (!unified || !unified.value.trim()) {
-    showToast('Please paste your scene text or prompts first', 'info');
-    return;
-  }
-
-  const raw = unified.value.trim();
-  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-
-  let detectedPrompt = '';
-  let detectedScript = [];
-  let detectedDialogue = [];
-  let detectedTitle = '';
-
-  for (let line of lines) {
-    if (/^(prompt|visual|midjourney|sd|ai\s*prompt)[:\-]/i.test(line)) {
-      detectedPrompt = line.replace(/^(prompt|visual|midjourney|sd|ai\s*prompt)[:\-]\s*/i, '');
-    } else if (/^(scene\s*\d*[:\-]|act\s*\d*[:\-])/i.test(line) && !detectedTitle) {
-      detectedTitle = line;
-    } else if (/^[A-Z0-9_\s]{2,15}:\s*["']?.+["']?$/.test(line)) {
-      detectedDialogue.push(line);
-    } else {
-      detectedScript.push(line);
-    }
-  }
-
-  if (detectedTitle && titleInp) titleInp.value = detectedTitle;
-  if (detectedPrompt && promptInp) promptInp.value = detectedPrompt;
-  else if (promptInp && !promptInp.value) promptInp.value = raw;
-
-  if (detectedScript.length > 0 && scriptInp) scriptInp.value = detectedScript.join('\n');
-  if (detectedDialogue.length > 0 && dialogueInp) dialogueInp.value = detectedDialogue.join('\n');
-
-  showToast('Auto-formatted scene beats & visual prompt!', 'success');
-}
-
-// Toggle Advanced Camera / Cinematography settings
-function toggleAdvancedSceneFields() {
-  const adv = document.getElementById('scene-advanced-fields');
-  const btn = document.getElementById('toggle-advanced-scene-btn');
-  if (!adv) return;
-  const isHidden = adv.style.display === 'none' || !adv.style.display;
-  adv.style.display = isHidden ? 'block' : 'none';
-  if (btn) {
-    btn.textContent = isHidden ? '− Hide Optional Camera & Atmospheric Settings' : '+ Show Optional Camera & Atmospheric Settings';
-  }
-}
-
-// Submit Scene Form (Create or Update)
+// Submit Scene Form (Pure Single Textbox for Director Jiya)
 async function submitSceneForm() {
-  const sceneId = document.getElementById('edit-scene-id').value;
-  let title = document.getElementById('scene-title-input').value;
-  const unified = document.getElementById('scene-unified-input')?.value || '';
-  let prompt = document.getElementById('scene-prompt-input').value;
-  const location = document.getElementById('scene-location-input')?.value || 'Neo-Tokyo Shibuya';
-  const time = document.getElementById('scene-time-input')?.value || 'Midnight Rain';
-  const mood = document.getElementById('scene-mood-input')?.value || 'Cinematic Action';
-  const camera = document.getElementById('scene-camera-input')?.value || 'Low Dutch Angle';
-  const negative = document.getElementById('scene-negative-input')?.value || 'low quality, blurry, deformed hands, extra limbs';
-  let script = document.getElementById('scene-script-input')?.value || '';
-  const dialogue = document.getElementById('scene-dialogue-input')?.value || '';
-  const status = document.getElementById('scene-status-input')?.value || 'Prompt Ready';
+  const sceneId = document.getElementById('edit-scene-id')?.value || '';
+  const unified = document.getElementById('scene-unified-input')?.value?.trim() || '';
 
-  // If prompt is empty but unified input has content, use unified input
-  if ((!prompt || !prompt.trim()) && unified.trim()) {
-    prompt = unified.trim();
-  }
-
-  // If script is empty but unified input has content, store unified text in script
-  if (!script && unified.trim()) {
-    script = unified.trim();
-  }
-
-  if (!title || !title.trim()) {
-    title = `Scene ${(state.scenes ? state.scenes.length + 1 : 1)}`;
-  }
-
-  if (!prompt || !prompt.trim()) {
-    showToast('Please paste your scene description or visual prompt!', 'error');
+  if (!unified) {
+    showToast('Please paste your scene description and prompts first!', 'error');
     return;
+  }
+
+  // Parse prompt and description from unified input
+  let prompt = unified;
+  let script = unified;
+  let title = '';
+
+  // Check if there is an explicit "Prompt: ..."
+  const promptMatch = unified.match(/(?:prompt|visual\s*prompt|midjourney|sd)[:\-]\s*([^\n\r]+(?:[\n\r]+[^\n\r]+)*)/i);
+  if (promptMatch && promptMatch[1]) {
+    prompt = promptMatch[1].trim();
+    const splitIndex = unified.toLowerCase().indexOf(promptMatch[0].toLowerCase());
+    if (splitIndex > 0) {
+      script = unified.substring(0, splitIndex).trim();
+    }
+  }
+
+  // Detect title from first line if short
+  const lines = unified.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length > 0 && lines[0].length < 60 && !/^(prompt|visual)/i.test(lines[0])) {
+    title = lines[0].replace(/^(scene\s*\d*[:\-]?\s*)/i, 'Scene: ');
+  }
+
+  const nextSceneNum = state.scenes ? state.scenes.length + 1 : 1;
+  if (!title) {
+    title = `Scene ${nextSceneNum}: Visual Beat`;
   }
 
   const payload = {
-    title: title.trim(),
-    location: location.trim(),
-    time_of_day: time.trim(),
-    mood: mood.trim(),
-    camera_angle: camera.trim(),
-    visual_prompt: prompt.trim(),
-    negative_prompt: negative.trim(),
-    narrative_script: script.trim(),
-    dialogue: dialogue.trim(),
-    status: status,
+    title: title,
+    location: 'Neo-Tokyo Shibuya',
+    time_of_day: 'Midnight Rain',
+    mood: 'Cinematic Anime Action',
+    camera_angle: 'Medium Shot',
+    visual_prompt: prompt,
+    negative_prompt: 'low quality, blurry, deformed hands, extra limbs, bad anatomy',
+    narrative_script: script,
+    dialogue: '',
+    status: 'Prompt Ready',
     created_by: state.currentUser ? state.currentUser.display_name : 'Director Jiya'
   };
 
@@ -1331,6 +1244,13 @@ async function submitAddFriend() {
 
 // Switch App Tabs (Landing, Storyboard, Reader, Prompt Studio, Team)
 function switchTab(tabName) {
+  // If user tries to open studio workspace without logging in, prompt login
+  if (tabName === 'storyboard' && !state.isLoggedIn) {
+    showToast('Please log in as Director Jiya or Manager Sahil to enter Studio', 'info');
+    openModal('login-modal');
+    return;
+  }
+
   state.activeTab = tabName;
   document.querySelectorAll('.nav-tab').forEach(t => {
     t.classList.toggle('active', t.dataset.tab === tabName);
@@ -1352,6 +1272,11 @@ function switchTab(tabName) {
   if (vTeam) vTeam.style.display = tabName === 'team' ? 'block' : 'none';
 
   if (tabName === 'landing') renderLandingShowcase();
+  if (tabName === 'storyboard') {
+    renderPartsBar();
+    renderScenesView();
+    updateStepper();
+  }
   if (tabName === 'reader') renderReaderView();
   if (tabName === 'prompts') renderPromptStudio();
   if (tabName === 'team') renderTeamView();

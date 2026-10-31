@@ -26,7 +26,7 @@
   <meta name="msapplication-TileImage" content="/assets/icon-192x192.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="/css/style.css?v=3">
+  <link rel="stylesheet" href="/css/style.css?v=5">
 </head>
 <body>
 
@@ -744,13 +744,18 @@
     </div>
   </div>
 
-  <!-- 4. Simplified Scene Editor / Creator Modal (Optimized for Jiya & Sahil) -->
+  <!-- 4. Simplified Scene Creator Modal: Single Text Box for Director Jiya -->
   <div class="modal-backdrop" id="scene-edit-modal">
-    <div class="modal-window" style="max-width: 720px;">
+    <div class="modal-window" style="max-width: 680px;">
       <div class="modal-header">
-        <div>
-          <h3 class="modal-title" id="scene-modal-heading">Add Scene Description &amp; Visual Prompt</h3>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Director Jiya pastes description/prompts • Manager Sahil copies &amp; generates art</p>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: #db2777; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+            👑
+          </div>
+          <div>
+            <h3 class="modal-title" id="scene-modal-heading">Add Scene (Seen)</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Director Jiya: Just paste your entire scene description &amp; prompts below</p>
+          </div>
         </div>
         <button class="modal-close-btn" onclick="closeModal('scene-edit-modal')">&times;</button>
       </div>
@@ -758,120 +763,27 @@
         <form id="scene-form" onsubmit="event.preventDefault(); submitSceneForm();">
           <input type="hidden" id="edit-scene-id">
 
-          <!-- Scene Title -->
+          <!-- Single All-in-One Scene Description & Prompts Box -->
           <div class="form-group">
-            <label class="form-label" style="font-weight: 700;">Scene Title</label>
-            <input type="text" class="form-input" id="scene-title-input" placeholder="e.g. Scene 3: Duel on Shibuya Crossing Rooftop">
-          </div>
-
-          <!-- Jiya's Simple All-In-One Box -->
-          <div class="form-group" style="margin-top: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
-              <label class="form-label" style="font-weight: 800; color: #db2777; margin-bottom: 0;">
-                Paste Entire Scene Description &amp; Prompts (One Box)
-              </label>
-              <button type="button" class="btn-toggle-advanced" onclick="autoSplitSceneInput()" title="Auto-detect Prompt and Narrative beats">
-                Auto-Format
-              </button>
-            </div>
-            <textarea class="form-textarea" id="scene-unified-input" rows="5" placeholder="Director Jiya: Paste your entire scene narrative, dialogue, and AI visual prompts here...
-Example:
-Rain pours over Shibuya as Ren unsheathes his astral blade.
-Prompt: in the style of Ufotable, cyber-samurai with glowing cyan katana in midnight rain, cinematic lighting, 8k wallpaper" oninput="onUnifiedSceneInput(this.value)"></textarea>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
-              Tip: Paste everything here. Sahil (Manager) can copy the prompt with 1 tap to generate in Midjourney/SD.
-            </div>
-          </div>
-
-          <!-- Dedicated AI Visual Prompt -->
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label" style="font-weight: 800; color: var(--primary);">
-              AI Visual Generation Prompt (Copied by Sahil for Midjourney / SD)
+            <label class="form-label" style="font-weight: 800; font-size: 0.95rem; color: #db2777; margin-bottom: 0.4rem;">
+              Paste Entire Scene Description &amp; Visual Prompts
             </label>
-            <textarea class="form-textarea" id="scene-prompt-input" rows="3" placeholder="masterpiece, best quality, anime still, Makoto Shinkai lighting, lone warrior in the rain..." required></textarea>
+            <textarea class="form-textarea" id="scene-unified-input" rows="8" placeholder="Paste everything here (story action, dialogue, setting, and AI visual prompts)...
 
-            <!-- 1-Click Aesthetic Chips -->
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">Click to append anime studio aesthetic:</div>
-            <div class="preset-chips-container">
-              <span class="preset-chip" onclick="appendPresetToScenePrompt('in the style of Makoto Shinkai, luminous sky, lens flare, vivid anime lighting, 8k resolution')">
-                + Makoto Shinkai Sky
-              </span>
-              <span class="preset-chip" onclick="appendPresetToScenePrompt('in the style of Ufotable, Demon Slayer aesthetic, particle sparks, dynamic action lighting')">
-                + Ufotable Action
-              </span>
-              <span class="preset-chip" onclick="appendPresetToScenePrompt('Studio Trigger style, Cyberpunk Edgerunners, vibrant neon yellow and cyan highlights, techwear')">
-                + Cyberpunk Neon
-              </span>
-              <span class="preset-chip" onclick="appendPresetToScenePrompt('Studio Ghibli style, Hayao Miyazaki aesthetic, lush greenery, whimsical warm sunlight')">
-                + Studio Ghibli
-              </span>
-              <span class="preset-chip" onclick="appendPresetToScenePrompt('90s vintage anime cel, retro anime screenshot, VHS tape grain, Cowboy Bebop aesthetic')">
-                + 90s Retro Cel
-              </span>
-            </div>
-          </div>
-
-          <!-- Optional Collapsible Cinematography Details -->
-          <div style="margin-top: 1rem;">
-            <button type="button" class="btn-toggle-advanced" id="toggle-advanced-scene-btn" onclick="toggleAdvancedSceneFields()">
-              + Show Optional Camera &amp; Atmospheric Settings
-            </button>
-          </div>
-
-          <div id="scene-advanced-fields" style="display: none; margin-top: 0.75rem; background: var(--bg-subtle); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-glass);">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Location / Setting</label>
-                <input type="text" class="form-input" id="scene-location-input" placeholder="e.g. Neo-Tokyo Shibuya District">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Time / Atmosphere</label>
-                <input type="text" class="form-input" id="scene-time-input" placeholder="e.g. Midnight Rain">
-              </div>
-            </div>
-
-            <div class="form-row" style="margin-top: 0.75rem;">
-              <div class="form-group">
-                <label class="form-label">Mood / Emotion</label>
-                <input type="text" class="form-input" id="scene-mood-input" placeholder="e.g. Cinematic, Intense">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Camera Angle</label>
-                <input type="text" class="form-input" id="scene-camera-input" placeholder="e.g. Low Dutch Angle">
-              </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 0.75rem;">
-              <label class="form-label">Negative Prompt</label>
-              <input type="text" class="form-input" id="scene-negative-input" value="low quality, blurry, deformed hands, extra limbs, bad anatomy, text, watermark">
-            </div>
-
-            <div class="form-group" style="margin-top: 0.75rem;">
-              <label class="form-label">Action / Narrative Beats</label>
-              <textarea class="form-textarea" id="scene-script-input" rows="2" placeholder="Narrative movement description..."></textarea>
-            </div>
-
-            <div class="form-group" style="margin-top: 0.75rem;">
-              <label class="form-label">Dialogue</label>
-              <textarea class="form-textarea" id="scene-dialogue-input" rows="2" placeholder='REN: "We only get one shot at this timeline."'></textarea>
-            </div>
-
-            <div class="form-group" style="margin-top: 0.75rem;">
-              <label class="form-label">Scene Status</label>
-              <select class="form-select" id="scene-status-input">
-                <option value="Prompt Ready">Prompt Ready (For Sahil to Render)</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Rendered">Rendered (Picture Uploaded)</option>
-                <option value="Approved">Approved by Team</option>
-              </select>
+Example:
+Heavy rain falls over Shibuya crossing as Ren confronts Kaoru. Lightning strikes in the background.
+Kaoru: 'You cannot rewrite destiny.'
+Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning storm, cyber samurai with glowing katana, Makoto Shinkai lighting, Ufotable action, 8k resolution" style="font-size: 0.95rem; line-height: 1.6; min-height: 190px; border-radius: 14px; border: 2px solid rgba(219, 39, 119, 0.25);"></textarea>
+            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem;">
+              <span>⚡</span> <span>Sahil (Manager) can copy this prompt with 1 tap to generate art in Midjourney or Stable Diffusion.</span>
             </div>
           </div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeModal('scene-edit-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="submitSceneForm()" style="font-weight: 800; padding: 0.65rem 1.5rem;">
-          Save Scene
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('scene-edit-modal')">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="submitSceneForm()" style="font-weight: 800; font-size: 1rem; padding: 0.75rem 2rem; border-radius: 12px; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(219, 39, 119, 0.35);">
+          Save Scene ✓
         </button>
       </div>
     </div>
@@ -1109,9 +1021,9 @@ Prompt: in the style of Ufotable, cyber-samurai with glowing cyan katana in midn
   </div>
 
   <!-- Scripts -->
-  <script src="/js/api.js?v=3"></script>
-  <script src="/js/components.js?v=3"></script>
-  <script src="/js/app.js?v=3"></script>
+  <script src="/js/api.js?v=5"></script>
+  <script src="/js/components.js?v=5"></script>
+  <script src="/js/app.js?v=5"></script>
 
   <script>
     // Hook up switch team modal population
