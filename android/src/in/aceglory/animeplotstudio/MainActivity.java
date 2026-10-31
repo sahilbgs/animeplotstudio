@@ -1,13 +1,14 @@
 package in.aceglory.animeplotstudio;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -24,7 +25,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -54,8 +55,10 @@ public class MainActivity extends Activity {
     private static final String BASE_URL = "https://anime.aceglory.in";
     private static final int REQUEST_PICK_IMAGE = 2001;
 
-    // Active Part ID for THE LAST PAGE
+    // Active Project & Part IDs
+    private int mActiveProjectId = 3;
     private int mActivePartId = 4;
+    private int mCurrentScenesCount = 0;
     private int mPendingUploadSceneId = -1;
     private int mPendingUploadSceneNumber = -1;
 
@@ -63,8 +66,11 @@ public class MainActivity extends Activity {
     private Button mTabScenes;
     private Button mTabReader;
     private Button mBtnRefresh;
+    private Button mBtnCreateScene;
+    private Button mBtnCreatePart;
     private ScrollView mScrollViewScenes;
     private LinearLayout mScenesContainer;
+    private LinearLayout mPartsChipsContainer;
     private ProgressBar mProgressBar;
     private WebView mReaderWebView;
     private LinearLayout mUploadOverlay;
@@ -76,6 +82,8 @@ public class MainActivity extends Activity {
     private final ExecutorService mExecutor = Executors.newFixedThreadPool(4);
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
     private final Map<String, Bitmap> mBitmapCache = new ConcurrentHashMap<>();
+
+    private JSONArray mLoadedParts = new JSONArray();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +99,8 @@ public class MainActivity extends Activity {
         setupTabs();
         setupReaderWebView();
 
-        // Load scenes from server immediately
+        // Load project parts and scenes from server
+        loadPartsFromServer();
         loadScenesFromServer();
     }
 
@@ -99,8 +108,11 @@ public class MainActivity extends Activity {
         mTabScenes = (Button) findViewById(R.id.tabScenes);
         mTabReader = (Button) findViewById(R.id.tabReader);
         mBtnRefresh = (Button) findViewById(R.id.btnRefresh);
+        mBtnCreateScene = (Button) findViewById(R.id.btnCreateScene);
+        mBtnCreatePart = (Button) findViewById(R.id.btnCreatePart);
         mScrollViewScenes = (ScrollView) findViewById(R.id.scrollViewScenes);
         mScenesContainer = (LinearLayout) findViewById(R.id.scenesContainer);
+        mPartsChipsContainer = (LinearLayout) findViewById(R.id.partsChipsContainer);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mReaderWebView = (WebView) findViewById(R.id.readerWebView);
         mUploadOverlay = (LinearLayout) findViewById(R.id.uploadOverlay);
@@ -111,7 +123,22 @@ public class MainActivity extends Activity {
         mBtnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                loadPartsFromServer();
                 loadScenesFromServer();
+            }
+        });
+
+        mBtnCreatePart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCreatePartDialog();
+            }
+        });
+
+        mBtnCreateScene.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showCreateSceneDialog();
             }
         });
     }
@@ -150,7 +177,9 @@ public class MainActivity extends Activity {
 
         mScrollViewScenes.setVisibility(View.GONE);
         mReaderWebView.setVisibility(View.VISIBLE);
-        mReaderWebView.loadUrl(BASE_URL + "/#reader");
+
+        // Load standalone reader mode (zero web dashboard, only illustrated storybook)
+        mReaderWebView.loadUrl(BASE_URL + "/?mode=reader#standalone-reader");
     }
 
     private void setupReaderWebView() {
@@ -166,21 +195,330 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Ensure auth as Sahil
-                String authScript = "javascript:(function() {" +
+
+                // Auto-authenticate and strictly hide any web navigation/dashboard elements
+                String hideScript = "javascript:(function() {" +
                         "try {" +
-                        "  var current = localStorage.getItem('anime_plot_auth');" +
-                        "  if (!current) {" +
-                        "    localStorage.setItem('anime_plot_auth', JSON.stringify({" +
-                        "      token: 'tok_sahil_native_app'," +
-                        "      user: { id: 5, username: 'sahil', display_name: 'Sahil', role: 'Manager', avatar_color: '#4f46e5', avatar_emoji: '🎨' }" +
-                        "    }));" +
-                        "  }" +
+                        "  document.body.classList.add('standalone-reader');" +
+                        "  var h = document.querySelector('header'); if (h) h.style.display = 'none';" +
+                        "  var nav = document.querySelector('.mobile-bottom-nav'); if (nav) nav.style.display = 'none';" +
+                        "  var cta = document.getElementById('view-landing'); if (cta) cta.style.display = 'none';" +
+                        "  var sb = document.getElementById('view-storyboard'); if (sb) sb.style.display = 'none';" +
+                        "  var vr = document.getElementById('view-reader'); if (vr) { vr.style.display = 'block'; vr.style.paddingTop = '1rem'; }" +
+                        "  if (typeof renderReaderView === 'function') renderReaderView('all');" +
                         "} catch(e) {}" +
                         "})();";
-                view.loadUrl(authScript);
+                view.loadUrl(hideScript);
             }
         });
+    }
+
+    /**
+     * Dialog to create a new Part natively in Android
+     */
+    private void showCreatePartDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Create New Story Part");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dpToPx(20), dpToPx(12), dpToPx(20), dpToPx(12));
+
+        int nextPartNum = mLoadedParts.length() + 1;
+
+        final EditText inputTitle = new EditText(this);
+        inputTitle.setHint("Part Title (e.g. Part " + nextPartNum + ": The Climax Spire)");
+        inputTitle.setText("Part " + nextPartNum + ": ");
+        layout.addView(inputTitle);
+
+        final EditText inputSummary = new EditText(this);
+        inputSummary.setHint("Part Summary (Optional)");
+        layout.addView(inputSummary);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Create Part", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String title = inputTitle.getText().toString().trim();
+                String summary = inputSummary.getText().toString().trim();
+                if (TextUtils.isEmpty(title)) {
+                    Toast.makeText(MainActivity.this, "Please enter part title", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                createNewPartOnServer(title, summary);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    /**
+     * Dialog to write and create a new Scene Prompt natively in Android
+     */
+    private void showCreateSceneDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("✍️ Write Scene Prompt for Jiya");
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(dpToPx(20), dpToPx(12), dpToPx(20), dpToPx(12));
+
+        int nextSceneNum = mCurrentScenesCount + 1;
+
+        final EditText inputTitle = new EditText(this);
+        inputTitle.setHint("Scene Title (e.g. Scene " + nextSceneNum + ": Rooftop Climax)");
+        inputTitle.setText("Scene " + nextSceneNum + ": ");
+        layout.addView(inputTitle);
+
+        final EditText inputPrompt = new EditText(this);
+        inputPrompt.setHint("AI Visual Prompt (For Midjourney / Sora / Kling)...");
+        inputPrompt.setMinLines(4);
+        inputPrompt.setGravity(Gravity.TOP | Gravity.START);
+        LinearLayout.LayoutParams pParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        pParams.topMargin = dpToPx(8);
+        inputPrompt.setLayoutParams(pParams);
+        layout.addView(inputPrompt);
+
+        final EditText inputDialogue = new EditText(this);
+        inputDialogue.setHint("Character Dialogue (Optional, e.g. AKIRA: Look at that!)");
+        LinearLayout.LayoutParams dParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        dParams.topMargin = dpToPx(8);
+        inputDialogue.setLayoutParams(dParams);
+        layout.addView(inputDialogue);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Save Scene Prompt", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String title = inputTitle.getText().toString().trim();
+                String prompt = inputPrompt.getText().toString().trim();
+                String dialogue = inputDialogue.getText().toString().trim();
+
+                if (TextUtils.isEmpty(prompt)) {
+                    Toast.makeText(MainActivity.this, "Please write an AI visual prompt", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                createNewSceneOnServer(title, prompt, dialogue);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    /**
+     * Sends POST /api/parts/project/{projectId}
+     */
+    private void createNewPartOnServer(final String title, final String summary) {
+        mProgressBar.setVisibility(View.VISIBLE);
+
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(BASE_URL + "/api/parts/project/" + mActiveProjectId);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+
+                    JSONObject payload = new JSONObject();
+                    payload.put("title", title);
+                    payload.put("summary", summary);
+                    payload.put("created_by", "Jiya");
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(payload.toString().getBytes("UTF-8"));
+                    os.close();
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == 200) {
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = in.readLine()) != null) sb.append(line);
+                        in.close();
+
+                        JSONObject res = new JSONObject(sb.toString());
+                        JSONObject newPart = res.optJSONObject("part");
+                        final int newPartId = newPart != null ? newPart.optInt("id", mActivePartId) : mActivePartId;
+
+                        mMainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mProgressBar.setVisibility(View.GONE);
+                                Toast.makeText(MainActivity.this, "✨ New Part created successfully!", Toast.LENGTH_SHORT).show();
+                                mActivePartId = newPartId;
+                                loadPartsFromServer();
+                                loadScenesFromServer();
+                            }
+                        });
+                        return;
+                    }
+                    throw new Exception("HTTP response " + responseCode);
+                } catch (final Exception e) {
+                    Log.e(TAG, "Error creating part", e);
+                    mMainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mProgressBar.setVisibility(View.GONE);
+                            Toast.makeText(MainActivity.this, "Failed to create part: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Sends POST /api/scenes/part/{partId}
+     */
+    private void createNewSceneOnServer(final String title, final String prompt, final String dialogue) {
+        mProgressBar.setVisibility(View.VISIBLE);
+
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(BASE_URL + "/api/scenes/part/" + mActivePartId);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setDoOutput(true);
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json");
+
+                    JSONObject payload = new JSONObject();
+                    payload.put("title", title);
+                    payload.put("visual_prompt", prompt);
+                    payload.put("narrative_script", prompt);
+                    payload.put("dialogue", dialogue);
+                    payload.put("status", "Prompt Ready");
+                    payload.put("created_by", "Jiya");
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(payload.toString().getBytes("UTF-8"));
+                    os.close();
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == 200) {
+                        mMainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mProgressBar.setVisibility(View.GONE);
+                                Toast.makeText(MainActivity.this, "✨ Scene created! Prompt ready for Sahil.", Toast.LENGTH_SHORT).show();
+                                loadScenesFromServer();
+                            }
+                        });
+                        return;
+                    }
+                    throw new Exception("HTTP response " + responseCode);
+                } catch (final Exception e) {
+                    Log.e(TAG, "Error creating scene", e);
+                    mMainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mProgressBar.setVisibility(View.GONE);
+                            Toast.makeText(MainActivity.this, "Failed to create scene: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    /**
+     * Fetches all Parts for the project: GET /api/parts/project/{projectId}
+     */
+    private void loadPartsFromServer() {
+        mExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(BASE_URL + "/api/parts/project/" + mActiveProjectId);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+
+                    int responseCode = conn.getResponseCode();
+                    if (responseCode == 200) {
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = in.readLine()) != null) sb.append(line);
+                        in.close();
+
+                        JSONObject json = new JSONObject(sb.toString());
+                        final JSONArray parts = json.optJSONArray("parts");
+                        if (parts != null) {
+                            mLoadedParts = parts;
+                            mMainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    renderPartsChips(parts);
+                                }
+                            });
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Could not load parts: " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    /**
+     * Renders horizontal part chips in Android native layout
+     */
+    private void renderPartsChips(JSONArray parts) {
+        mPartsChipsContainer.removeAllViews();
+
+        for (int i = 0; i < parts.length(); i++) {
+            JSONObject part = parts.optJSONObject(i);
+            if (part == null) continue;
+
+            final int partId = part.optInt("id");
+            final int partNumber = part.optInt("part_number", i + 1);
+            final String title = part.optString("title", "Part " + partNumber);
+            final int sceneCount = part.optInt("scene_count", 0);
+            final boolean isSelected = (partId == mActivePartId);
+
+            Button chip = new Button(this);
+            chip.setText("📖 Part " + partNumber + ": " + title + " (" + sceneCount + ")");
+            chip.setTextSize(12);
+            chip.setTypeface(Typeface.DEFAULT_BOLD);
+            chip.setPadding(dpToPx(14), 0, dpToPx(14), 0);
+
+            if (isSelected) {
+                chip.setBackgroundResource(R.drawable.tab_selected_bg);
+                chip.setTextColor(0xFFFFFFFF);
+                mTxtPartTitle.setText("Part " + partNumber + ": " + title);
+            } else {
+                chip.setBackgroundResource(R.drawable.tab_unselected_bg);
+                chip.setTextColor(0xFFCBD5E1);
+            }
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, dpToPx(38)
+            );
+            lp.rightMargin = dpToPx(8);
+            chip.setLayoutParams(lp);
+
+            chip.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mActivePartId = partId;
+                    renderPartsChips(mLoadedParts);
+                    loadScenesFromServer();
+                }
+            });
+
+            mPartsChipsContainer.addView(chip);
+        }
     }
 
     /**
@@ -216,6 +554,7 @@ public class MainActivity extends Activity {
                                 @Override
                                 public void run() {
                                     mProgressBar.setVisibility(View.GONE);
+                                    mCurrentScenesCount = scenes.length();
                                     renderScenesNative(scenes);
                                 }
                             });
@@ -246,7 +585,7 @@ public class MainActivity extends Activity {
 
         if (scenes == null || scenes.length() == 0) {
             TextView emptyText = new TextView(this);
-            emptyText.setText("No scenes found for this story part yet.");
+            emptyText.setText("No scenes found in this part yet.\nTap '✍️ + Write Scene' above to add Scene 1.");
             emptyText.setTextColor(0xFF94A3B8);
             emptyText.setTextSize(14);
             emptyText.setGravity(Gravity.CENTER);

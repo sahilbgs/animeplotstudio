@@ -33,6 +33,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPWA();
   await loadInitialData();
 
+  // Check for Standalone Reader mode (used in Android App Preview)
+  if (window.location.search.includes('mode=reader') || window.location.hash === '#standalone-reader') {
+    document.body.classList.add('standalone-reader');
+    switchTab('reader');
+    return;
+  }
+
   // Default directly to storyboard (Scenes Studio) so creators enter workspace immediately
   const hash = window.location.hash.replace('#', '');
   if (['storyboard', 'landing', 'characters', 'reader'].includes(hash)) {
