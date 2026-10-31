@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.pid
+logs/
+public_url.txt
+.DS_Store
+*.log

@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>ANIME PLOT STUDIO - Collaborative Story, Part &amp; Scene Visual Platform</title>
+
+  <!-- PWA Web App Manifest -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- Favicon & Touch Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+  <link rel="mask-icon" href="/assets/icon-maskable-192x192.png" color="#4f46e5">
+
+  <!-- PWA Theme & Mobile Capabilities -->
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AnimePlot">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="AnimePlot Studio">
+  <meta name="msapplication-TileColor" content="#4f46e5">
+  <meta name="msapplication-TileImage" content="/assets/icon-192x192.png">
+  <meta name="format-detection" content="telephone=no">
+
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="app-header">
+    <div class="brand-section">
+      <img src="/assets/logo.jpg" alt="ANIME PLOT STUDIO Logo" class="brand-logo-img" onclick="scrollToSection('section-step-1-story')" title="ANIME PLOT STUDIO">
+      <div>
+        <div class="brand-title">ANIME PLOT STUDIO</div>
+        <div class="brand-sub">Story ➔ Part ➔ Scene Visuals</div>
+      </div>
+    </div>
+
+    <!-- Center Navigation Tabs (Desktop) -->
+    <nav class="header-center">
+      <button class="nav-tab active" data-tab="storyboard">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
+          <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/>
+        </svg>
+        Storyboard
+      </button>
+      <button class="nav-tab" data-tab="reader">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+          <path d="M6 6h10"/><path d="M6 10h10"/>
+        </svg>
+        Screenplay Reader
+      </button>
+      <button class="nav-tab" data-tab="prompts">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/>
+          <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/>
+        </svg>
+        Prompt Studio
+      </button>
+      <button class="nav-tab" data-tab="team">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Team &amp; Friends
+      </button>
+    </nav>
+
+    <!-- Header Actions: Story Selector, + Create Story Button, Collaborator Pill -->
+    <div class="header-actions">
+      <!-- PWA Install Button -->
+      <button id="pwa-install-btn" class="btn btn-primary btn-pwa-install" onclick="installPWA()" title="Install Anime Plot Studio App" style="display: none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Install App</span>
+      </button>
+
+      <!-- Story Selector in Header -->
+      <div class="header-story-selector-wrap" title="Current Anime Story / Plot">
+        <select id="header-story-dropdown" class="header-story-dropdown" onchange="onHeaderStorySelect(this.value)">
+          <!-- Populated by JavaScript -->
+        </select>
+      </div>
+
+      <!-- Prominent "+ Create Story" Button -->
+      <button class="btn btn-primary btn-create-story" onclick="openCreateStoryModal()" title="Create New Anime Story (Step 1)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>Create Story</span>
+      </button>
+
+      <button class="btn btn-secondary header-export-btn" onclick="exportScreenplay()" title="Export complete story as Markdown screenplay">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" x2="12" y1="15" y2="3"/>
+        </svg>
+        <span>Export</span>
+      </button>
+
+      <!-- Active Collaborator Switcher -->
+      <div class="collaborator-pill" onclick="openModal('switch-team-modal')" title="Click to switch collaborator">
+        <div class="collaborator-avatar" id="current-user-avatar">S</div>
+        <div>
+          <div class="collaborator-name" id="current-user-name">Sahil</div>
+          <div class="collaborator-role" id="current-user-role">Director &amp; Writer</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- PWA Mobile Install Notification Banner -->
+  <div id="pwa-mobile-banner" class="pwa-mobile-banner" style="display: none;">
+    <img src="/assets/icon-192x192.png" class="pwa-banner-icon" alt="App Icon">
+    <div class="pwa-banner-text">
+      <div class="pwa-banner-title">Install Anime Plot Studio</div>
+      <div class="pwa-banner-sub">Install app for fast offline storyboard creation</div>
+    </div>
+    <div class="pwa-banner-actions">
+      <button class="btn btn-primary btn-sm" onclick="installPWA()">Install</button>
+      <button class="btn-icon-dismiss" onclick="dismissPWABanner()" title="Dismiss">&times;</button>
+    </div>
+  </div>
+
+  <!-- Main App Content -->
+  <main class="main-wrapper">
+
+    <!-- 3-Tier Hierarchy Pipeline Stepper: 1. STORY -> 2. PART -> 3. SCENE -->
+    <section class="workflow-stepper-panel glass-panel">
+      <div class="stepper-track">
+        <!-- Step 1: Story -->
+        <div class="step-card active" id="stepper-step-1" onclick="scrollToSection('section-step-1-story')" title="Click to jump to Step 1: Anime Story">
+          <div class="step-num-pill">STEP 1</div>
+          <div class="step-content">
+            <div class="step-heading">Create &amp; Select Story</div>
+            <div class="step-subtext" id="stepper-story-name">Loading Story...</div>
+          </div>
+          <button class="step-action-chip" onclick="event.stopPropagation(); openCreateStoryModal();" title="Create New Story">
+            + Create Story
+          </button>
+        </div>
+
+        <div class="stepper-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+
+        <!-- Step 2: Part -->
+        <div class="step-card" id="stepper-step-2" onclick="scrollToSection('section-step-2-parts')" title="Click to jump to Step 2: Story Parts">
+          <div class="step-num-pill">STEP 2</div>
+          <div class="step-content">
+            <div class="step-heading">Story Part (1, 2, 3...)</div>
+            <div class="step-subtext" id="stepper-part-name">Select or Create Part</div>
+          </div>
+          <button class="step-action-chip" onclick="event.stopPropagation(); openModal('new-part-modal');" title="Create Next Part">
+            + New Part
+          </button>
+        </div>
+
+        <div class="stepper-arrow">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+
+        <!-- Step 3: Scene (Seen) -->
+        <div class="step-card" id="stepper-step-3" onclick="scrollToSection('section-step-3-scenes')" title="Click to jump to Step 3: Visual Scenes">
+          <div class="step-num-pill">STEP 3</div>
+          <div class="step-content">
+            <div class="step-heading">Visual Scene (Seen)</div>
+            <div class="step-subtext" id="stepper-scene-name">Prompts &amp; Frames</div>
+          </div>
+          <button class="step-action-chip" onclick="event.stopPropagation(); openCreateSceneModal();" title="Add Scene to Part">
+            + New Scene
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: STORYBOARD & SCENE STUDIO -->
+    <div id="view-storyboard">
+      
+      <!-- =========================================================================
+           TIER 1: ANIME STORIES & PLOTS (STEP 1)
+           ========================================================================= -->
+      <section class="section-container" id="section-step-1-story">
+        <div class="section-header-row">
+          <div>
+            <div class="section-step-badge">STEP 1 OF 3 • ANIME PLOT</div>
+            <h2 class="section-title">Anime Stories &amp; Series Plots</h2>
+            <p class="section-desc">Sub se pehle apni Anime Story / Plot create karein. Phir Part aur Scene create karein.</p>
+          </div>
+          <button class="btn btn-primary btn-create-story" onclick="openCreateStoryModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Create New Story
+          </button>
+        </div>
+
+        <!-- Stories Carousel (Cards for all Anime Stories + "+ Create New Story" Card) -->
+        <div class="stories-carousel" id="stories-carousel">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <!-- Active Story Hero Banner -->
+        <div class="glass-panel project-banner" style="margin-top: 1rem;">
+          <div class="project-cover-container" onclick="openStoryPosterUploadModal()" title="Click to change Story Poster">
+            <img id="project-cover-img" class="project-cover-img" src="/uploads/projects/neon_chronos_poster.svg" alt="Anime Poster">
+            <div class="cover-upload-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/>
+              </svg>
+              Change Poster
+            </div>
+          </div>
+
+          <div class="project-details">
+            <div class="project-meta-badges">
+              <span class="meta-badge badge-db">PostgreSQL Database</span>
+              <span class="meta-badge badge-genre" id="project-genre-badge">Cyberpunk Action</span>
+              <span class="meta-badge badge-style" id="project-style-badge">Makoto Shinkai x Ufotable</span>
+              <span class="meta-badge badge-status" id="project-status-badge">In Production</span>
+            </div>
+
+            <h1 class="project-title" id="project-title">Loading Anime Story...</h1>
+            <div class="project-tagline" id="project-tagline"></div>
+            <p class="project-synopsis" id="project-synopsis"></p>
+
+            <!-- Story Actions Toolbar -->
+            <div class="story-actions-toolbar">
+              <button class="btn btn-sm btn-primary" onclick="openCreateStoryModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                + Create Another Story
+              </button>
+              <button class="btn btn-sm btn-secondary" onclick="openEditStoryModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                </svg>
+                Edit Story
+              </button>
+              <button class="btn btn-sm btn-secondary" onclick="openStoryPosterUploadModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
+                </svg>
+                Upload Poster
+              </button>
+              <button class="btn btn-sm btn-secondary danger-hover" onclick="confirmDeleteStory()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+                Delete Story
+              </button>
+            </div>
+          </div>
+
+          <div class="project-quick-stats">
+            <div class="stat-box">
+              <div class="stat-number" id="stat-parts-count">0</div>
+              <div class="stat-label">Story Parts</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-number" id="stat-scenes-count">0</div>
+              <div class="stat-label">Total Scenes</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================================================================
+           TIER 2: STORY PARTS & EPISODES (STEP 2: PART)
+           ========================================================================= -->
+      <section class="section-container parts-bar-wrapper" id="section-step-2-parts" style="margin-top: 2rem;">
+        <div class="section-header-row">
+          <div>
+            <div class="section-step-badge">STEP 2 OF 3 • PARTS &amp; EPISODES</div>
+            <h2 class="section-title">Story Parts &amp; Episodes (Part 1, 2, 3...)</h2>
+            <p class="section-desc">Create and organize story parts/episodes under this Anime Story.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('new-part-modal')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Create Next Part
+          </button>
+        </div>
+
+        <div class="parts-carousel" id="parts-carousel">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- =========================================================================
+           TIER 3: VISUAL SCENES (STEP 3: SEEN / SCENE)
+           ========================================================================= -->
+      <section class="section-container" id="section-step-3-scenes" style="margin-top: 2rem;">
+        <div class="active-part-banner" id="active-part-banner">
+          <div class="active-part-info">
+            <div class="section-step-badge" style="margin-bottom: 0.35rem;">STEP 3 OF 3 • VISUAL SCENES (SEEN)</div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div class="active-part-num-badge" id="active-part-num">PART 1</div>
+              <div>
+                <div class="active-part-title-text" id="active-part-heading">Part Title</div>
+                <div class="active-part-desc" id="active-part-desc">Part Summary</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene-toolbar">
+            <button class="btn btn-primary" onclick="openCreateSceneModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Add New Scene
+            </button>
+          </div>
+        </div>
+
+        <!-- Scenes Grid Layout -->
+        <div class="scenes-grid" id="scenes-grid">
+          <!-- Scene Cards populated by JavaScript -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- TAB 2: SCREENPLAY READER VIEW -->
+    <div id="view-reader" style="display: none;">
+      <div class="reader-container" id="reader-content">
+        <!-- Rendered Screenplay -->
+      </div>
+    </div>
+
+    <!-- TAB 3: PROMPT STUDIO VIEW -->
+    <div id="view-prompts" style="display: none;">
+      <div style="margin-bottom: 2rem;">
+        <h2 class="section-title" style="margin-bottom: 0.5rem;">
+          Anime Visual Prompt Studio &amp; Presets
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">
+          Curated studio aesthetics, lighting effects, and camera angles crafted for Midjourney, Stable Diffusion, and Niji Journey.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1.5rem;" id="presets-list-container">
+        <!-- Preset Cards -->
+      </div>
+    </div>
+
+    <!-- TAB 4: TEAM & COLLABORATORS VIEW -->
+    <div id="view-team" style="display: none;">
+      <div class="section-header-row" style="margin-bottom: 2rem;">
+        <div>
+          <h2 class="section-title" style="margin-bottom: 0.5rem;">
+            Creative Team &amp; Collaborators
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">
+            Collaborate seamlessly with your friends. Work together on story arcs, prompts, and visual rendering.
+          </p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('add-friend-modal')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Add Friend / Collaborator
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem; max-width: 800px;" id="team-list-container">
+        <!-- Team Members Cards -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ==============================================================================
+       MODALS
+       ============================================================================== -->
+
+  <!-- 0A. Create New Anime Story / Plot Modal (Step 1) -->
+  <div class="modal-backdrop" id="new-story-modal">
+    <div class="modal-window" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <div class="section-step-badge">STEP 1 • CREATE STORY</div>
+          <h3 class="modal-title">Create New Anime Story / Plot</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('new-story-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-story-form" onsubmit="event.preventDefault(); submitNewStory();">
+          <div class="form-group">
+            <label class="form-label">Story / Anime Series Title *</label>
+            <input type="text" class="form-input" id="new-story-title" placeholder="e.g. Cyberpunk Shinobi 2099 / Dragon Soul Chronicles" required>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Catchphrase / Logline (One-Liner)</label>
+            <input type="text" class="form-input" id="new-story-tagline" placeholder="e.g. In a neon city where ancient curses are compiled into executable code.">
+          </div>
+
+          <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Anime Genre</label>
+              <select class="form-select" id="new-story-genre">
+                <option value="Cyberpunk Action & Sci-Fi">Cyberpunk Action &amp; Sci-Fi</option>
+                <option value="Dark Fantasy & Supernatural">Dark Fantasy &amp; Supernatural</option>
+                <option value="Shonen Action & Adventure">Shonen Action &amp; Adventure</option>
+                <option value="Psychological Thriller & Mystery">Psychological Thriller &amp; Mystery</option>
+                <option value="Mecha Warfare & Space Opera">Mecha Warfare &amp; Space Opera</option>
+                <option value="Isekai & Supernatural Realm">Isekai &amp; Supernatural Realm</option>
+                <option value="Urban Fantasy & Martial Arts">Urban Fantasy &amp; Martial Arts</option>
+                <option value="Slice of Life & Supernatural">Slice of Life &amp; Supernatural</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Visual Art Aesthetic / Studio</label>
+              <select class="form-select" id="new-story-art-style">
+                <option value="Makoto Shinkai & Ufotable Hybrid">Makoto Shinkai &amp; Ufotable Hybrid</option>
+                <option value="Studio MAPPA Style (High Contrast Gritty)">Studio MAPPA Style (High Contrast Gritty)</option>
+                <option value="Studio Trigger Style (Neon Pop Cyberpunk)">Studio Trigger Style (Neon Pop Cyberpunk)</option>
+                <option value="Studio Ghibli Style (Lush Hand-Drawn Watercolor)">Studio Ghibli Style (Lush Watercolor)</option>
+                <option value="Wit Studio Style (Dynamic Cinematic)">Wit Studio Style (Dynamic Cinematic)</option>
+                <option value="90s Retro Cel Anime (Cowboy Bebop)">90s Retro Cel Anime (Cowboy Bebop)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Plot Outline / Synopsis</label>
+            <textarea class="form-textarea" id="new-story-synopsis" rows="3" placeholder="Describe the overarching plot, central conflict, hero's journey, and world setting..."></textarea>
+          </div>
+
+          <!-- Poster Selection -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Choose Initial Anime Poster Style</label>
+            <input type="hidden" id="new-story-poster-choice" value="/assets/logo.jpg">
+            <div class="poster-preset-grid" id="new-story-preset-grid">
+              <div class="poster-preset-item selected" onclick="selectPosterPreset(this, '/assets/logo.jpg')">
+                <img src="/assets/logo.jpg" class="poster-preset-thumb" alt="Official Studio Poster">
+                <div class="poster-preset-label">Official Studio</div>
+              </div>
+              <div class="poster-preset-item" onclick="selectPosterPreset(this, '/uploads/projects/cyberpunk_poster.svg')">
+                <img src="/uploads/projects/cyberpunk_poster.svg" class="poster-preset-thumb" alt="Cyberpunk">
+                <div class="poster-preset-label">Cyberpunk</div>
+              </div>
+              <div class="poster-preset-item" onclick="selectPosterPreset(this, '/uploads/projects/fantasy_dragon_poster.svg')">
+                <img src="/uploads/projects/fantasy_dragon_poster.svg" class="poster-preset-thumb" alt="Dark Fantasy">
+                <div class="poster-preset-label">Dark Fantasy</div>
+              </div>
+              <div class="poster-preset-item" onclick="selectPosterPreset(this, '/uploads/projects/samurai_shonen_poster.svg')">
+                <img src="/uploads/projects/samurai_shonen_poster.svg" class="poster-preset-thumb" alt="Samurai">
+                <div class="poster-preset-label">Samurai Blade</div>
+              </div>
+              <div class="poster-preset-item" onclick="selectPosterPreset(this, '/uploads/projects/retro_mecha_poster.svg')">
+                <img src="/uploads/projects/retro_mecha_poster.svg" class="poster-preset-thumb" alt="Mecha">
+                <div class="poster-preset-label">Retro Mecha</div>
+              </div>
+              <div class="poster-preset-item" onclick="selectPosterPreset(this, '/uploads/projects/neon_chronos_poster.svg')">
+                <img src="/uploads/projects/neon_chronos_poster.svg" class="poster-preset-thumb" alt="Tokyo">
+                <div class="poster-preset-label">Tokyo Astral</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Or Upload Custom Poster -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Or Upload Custom Poster Image (Optional)</label>
+            <input type="file" id="new-story-poster-file" class="form-input" accept="image/*">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('new-story-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitNewStory()">
+          Create Story &amp; Proceed to Part 1
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0B. Edit Active Anime Story Details Modal -->
+  <div class="modal-backdrop" id="edit-story-modal">
+    <div class="modal-window" style="max-width: 640px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Anime Story Details</h3>
+        <button class="modal-close-btn" onclick="closeModal('edit-story-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-story-form" onsubmit="event.preventDefault(); submitEditStory();">
+          <div class="form-group">
+            <label class="form-label">Story Title</label>
+            <input type="text" class="form-input" id="edit-story-title" required>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Tagline</label>
+            <input type="text" class="form-input" id="edit-story-tagline">
+          </div>
+          <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Genre</label>
+              <input type="text" class="form-input" id="edit-story-genre">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Art Style</label>
+              <input type="text" class="form-input" id="edit-story-art-style">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Production Status</label>
+            <select class="form-select" id="edit-story-status">
+              <option value="In Production">In Production</option>
+              <option value="Planning & Concept">Planning &amp; Concept</option>
+              <option value="Completed">Completed</option>
+              <option value="Hiatus">Hiatus</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Plot Synopsis</label>
+            <textarea class="form-textarea" id="edit-story-synopsis" rows="4"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('edit-story-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitEditStory()">Save Story Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0C. Upload Story Poster Modal -->
+  <div class="modal-backdrop" id="upload-story-poster-modal">
+    <div class="modal-window" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Upload Anime Story Poster</h3>
+        <button class="modal-close-btn" onclick="closeModal('upload-story-poster-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-dropzone" id="story-poster-dropzone" onclick="document.getElementById('story-poster-file-input').click()">
+          <div class="dropzone-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+          </div>
+          <div class="dropzone-text">Click or Drag Poster Image Here</div>
+          <div class="dropzone-sub">PNG, JPG, WEBP, SVG (Max 25MB)</div>
+          <input type="file" id="story-poster-file-input" accept="image/*" style="display: none;" onchange="handleStoryPosterFileChange(this)">
+        </div>
+        <div id="story-poster-preview-wrap" style="margin-top: 1rem; text-align: center; display: none;">
+          <img id="story-poster-preview-img" src="" style="max-height: 220px; border-radius: var(--radius-md); border: 1px solid var(--border-glass);" alt="Preview">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('upload-story-poster-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitStoryPosterUpload()">Upload Poster</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. Upload Pictures for Scene Modal -->
+  <div class="modal-backdrop" id="upload-scene-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="upload-scene-modal-title">Upload Scene Pictures</h3>
+        <button class="modal-close-btn" onclick="closeModal('upload-scene-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-dropzone" id="scene-dropzone">
+          <div class="dropzone-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+          </div>
+          <div class="dropzone-text">Click or Drag &amp; Drop Scene Pictures Here</div>
+          <div class="dropzone-sub">Supports PNG, JPG, JPEG, WEBP, GIF (Max 25MB each)</div>
+          <input type="file" id="scene-file-input" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <div class="upload-preview-grid" id="scene-preview-grid"></div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label class="form-label">Picture Caption / Notes (Optional)</label>
+          <input type="text" class="form-input" id="scene-upload-caption" placeholder="e.g. Midjourney v6 render - Frame 01">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;">
+          <input type="checkbox" id="scene-upload-set-primary" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+          <label for="scene-upload-set-primary" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+            Set first uploaded picture as the primary Scene Keyframe
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('upload-scene-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitSceneUpload()">
+          Upload to Scene
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Upload Pictures for Part Modal -->
+  <div class="modal-backdrop" id="upload-part-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="upload-part-modal-title">Upload Part Cover Picture</h3>
+        <button class="modal-close-btn" onclick="closeModal('upload-part-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="upload-dropzone" id="part-dropzone">
+          <div class="dropzone-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+          </div>
+          <div class="dropzone-text">Click or Drag &amp; Drop Part Artwork Here</div>
+          <div class="dropzone-sub">Set the visual poster / banner for this story part</div>
+          <input type="file" id="part-file-input" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <div class="upload-preview-grid" id="part-preview-grid"></div>
+
+        <div class="form-group" style="margin-top: 1rem;">
+          <label class="form-label">Artwork Caption</label>
+          <input type="text" class="form-input" id="part-upload-caption" placeholder="e.g. Official Part Cover Artwork">
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem;">
+          <input type="checkbox" id="part-upload-set-cover" checked style="width: 18px; height: 18px; accent-color: var(--primary);">
+          <label for="part-upload-set-cover" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+            Set as Part Cover Banner
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('upload-part-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitPartUpload()">
+          Upload Part Artwork
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. New Part Creator Modal -->
+  <div class="modal-backdrop" id="new-part-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Story Part (Part 1, 2, 3...)</h3>
+        <button class="modal-close-btn" onclick="closeModal('new-part-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-part-form" onsubmit="event.preventDefault(); submitNewPart();">
+          <div class="form-group">
+            <label class="form-label">Part Title</label>
+            <input type="text" class="form-input" id="new-part-title" placeholder="e.g. Part 3: Awakening of the Dragon God" required>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Part Summary / Arc Objective</label>
+            <textarea class="form-textarea" id="new-part-summary" rows="3" placeholder="What happens in this part or episode?"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('new-part-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitNewPart()">
+          Create Part
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Scene Editor / Creator Modal -->
+  <div class="modal-backdrop" id="scene-edit-modal">
+    <div class="modal-window" style="max-width: 860px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="scene-modal-heading">Add / Edit Scene</h3>
+        <button class="modal-close-btn" onclick="closeModal('scene-edit-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="scene-form" onsubmit="event.preventDefault(); submitSceneForm();">
+          <input type="hidden" id="edit-scene-id">
+
+          <div class="form-group">
+            <label class="form-label">Scene Title</label>
+            <input type="text" class="form-input" id="scene-title-input" placeholder="e.g. Scene 4: Duel on the Rooftop" required>
+          </div>
+
+          <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Location / Setting</label>
+              <input type="text" class="form-input" id="scene-location-input" placeholder="e.g. Neo-Tokyo Skyscraper Rooftop">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time of Day / Atmosphere</label>
+              <input type="text" class="form-input" id="scene-time-input" placeholder="e.g. Midnight Rain / Twilight Golden Hour">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Mood / Emotional Tone</label>
+              <input type="text" class="form-input" id="scene-mood-input" placeholder="e.g. Intense, Melancholic, Epic Climax">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Camera Angle &amp; Shot Type</label>
+              <input type="text" class="form-input" id="scene-camera-input" placeholder="e.g. Wide Establishing Shot / Low Dutch Tilt">
+            </div>
+          </div>
+
+          <!-- Visual Prompt Builder -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="form-label" style="color: var(--primary);">
+                AI Visual Generation Prompt (Midjourney / SD / Leonardo)
+              </label>
+            </div>
+            <textarea class="form-textarea" id="scene-prompt-input" rows="3" placeholder="masterpiece, best quality, anime still, Makoto Shinkai lighting, lone warrior in the rain..." required></textarea>
+
+            <!-- 1-Click Prompt Preset Helper Chips -->
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">Click to append anime studio aesthetic:</div>
+            <div class="preset-chips-container">
+              <span class="preset-chip" onclick="appendPresetToScenePrompt('in the style of Makoto Shinkai, luminous sky, lens flare, vivid anime lighting, 8k resolution')">
+                + Makoto Shinkai Sky
+              </span>
+              <span class="preset-chip" onclick="appendPresetToScenePrompt('in the style of Ufotable, Demon Slayer aesthetic, particle sparks, dynamic action lighting')">
+                + Ufotable Action
+              </span>
+              <span class="preset-chip" onclick="appendPresetToScenePrompt('Studio Trigger style, Cyberpunk Edgerunners, vibrant neon yellow and cyan highlights, techwear')">
+                + Cyberpunk Neon
+              </span>
+              <span class="preset-chip" onclick="appendPresetToScenePrompt('Studio Ghibli style, Hayao Miyazaki aesthetic, lush greenery, whimsical warm sunlight')">
+                + Studio Ghibli
+              </span>
+              <span class="preset-chip" onclick="appendPresetToScenePrompt('90s vintage anime cel, retro anime screenshot, VHS tape grain, Cowboy Bebop aesthetic')">
+                + 90s Retro Cel
+              </span>
+              <span class="preset-chip" onclick="appendPresetToScenePrompt('cinematic extreme low angle shot, looking up at character, dramatic perspective')">
+                + Low Angle Heroic
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Negative Prompt</label>
+            <input type="text" class="form-input" id="scene-negative-input" value="low quality, blurry, deformed hands, extra limbs, bad anatomy, text, watermark">
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Action / Narrative Beats (Screenplay)</label>
+            <textarea class="form-textarea" id="scene-script-input" rows="2" placeholder="Describe the character movements, sound effects, and environment..."></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Character Dialogue</label>
+            <textarea class="form-textarea" id="scene-dialogue-input" rows="2" placeholder='REN: "We only get one shot at this timeline."'></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Scene Status</label>
+            <select class="form-select" id="scene-status-input">
+              <option value="In Progress">In Progress</option>
+              <option value="Prompt Ready">Prompt Ready (Ready for AI Render)</option>
+              <option value="Rendered">Rendered (Picture Uploaded)</option>
+              <option value="Approved">Approved by Team</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('scene-edit-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitSceneForm()">
+          Save Scene
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Add Friend / Collaborator Modal -->
+  <div class="modal-backdrop" id="add-friend-modal">
+    <div class="modal-window" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Invite Team Friend</h3>
+        <button class="modal-close-btn" onclick="closeModal('add-friend-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="add-friend-form" onsubmit="event.preventDefault(); submitAddFriend();">
+          <div class="form-group">
+            <label class="form-label">Friend's Name</label>
+            <input type="text" class="form-input" id="friend-name-input" placeholder="e.g. Rohan / Alex / Kevin" required>
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Team Role</label>
+            <input type="text" class="form-input" id="friend-role-input" placeholder="e.g. Prompt Engineer / Co-Director / Artist">
+          </div>
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Avatar Accent Color</label>
+            <input type="color" class="form-input" id="friend-color-input" value="#4f46e5" style="height: 44px; padding: 4px; cursor: pointer;">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('add-friend-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAddFriend()">
+          Add to Team
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Switch Active Collaborator Modal -->
+  <div class="modal-backdrop" id="switch-team-modal">
+    <div class="modal-window" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Switch Active Collaborator</h3>
+        <button class="modal-close-btn" onclick="closeModal('switch-team-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          Select who is currently creating scenes and uploading pictures:
+        </p>
+        <div id="switch-team-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('switch-team-modal')">Close</button>
+        <button class="btn btn-primary" onclick="closeModal('switch-team-modal'); openModal('add-friend-modal');">
+          Add New Friend
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Lightbox Image Modal -->
+  <div class="lightbox-backdrop" id="lightbox-modal" onclick="closeLightbox()">
+    <div class="lightbox-img-wrap" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="Enlarged Anime Art">
+    </div>
+    <div class="lightbox-caption" id="lightbox-caption" onclick="event.stopPropagation()"></div>
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem;" onclick="event.stopPropagation()">
+      <button class="btn btn-secondary" onclick="closeLightbox()">Close</button>
+      <a id="lightbox-download-link" href="#" download class="btn btn-primary" onclick="this.href=document.getElementById('lightbox-img').src">
+        Download Picture
+      </a>
+    </div>
+  <!-- Mobile Bottom Native Navigation Bar -->
+  <nav class="mobile-bottom-nav">
+    <button class="mobile-nav-item active" data-tab="storyboard" onclick="switchTab('storyboard')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
+        <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/>
+      </svg>
+      <span>Studio</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="reader" onclick="switchTab('reader')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+        <path d="M6 6h10"/><path d="M6 10h10"/>
+      </svg>
+      <span>Reader</span>
+    </button>
+
+    <!-- Central Floating Action Button (FAB) -->
+    <button class="mobile-nav-fab" onclick="openMobileActionSheet()" title="Quick Actions (+ Story / Part / Scene)">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </button>
+
+    <button class="mobile-nav-item" data-tab="prompts" onclick="switchTab('prompts')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/>
+        <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/>
+      </svg>
+      <span>Prompts</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="team" onclick="switchTab('team')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+      </svg>
+      <span>Team</span>
+    </button>
+  </nav>
+
+  <!-- Mobile Quick Action Bottom Sheet -->
+  <div class="modal-backdrop" id="mobile-action-sheet">
+    <div class="modal-window mobile-sheet" style="max-width: 500px;">
+      <div class="mobile-sheet-drag-handle"></div>
+      <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+        <h3 class="modal-title">Anime Studio Actions</h3>
+        <button class="modal-close-btn" onclick="closeModal('mobile-action-sheet')">&times;</button>
+      </div>
+      <div class="mobile-quick-actions-list">
+        <button class="mobile-action-row" onclick="closeModal('mobile-action-sheet'); openCreateStoryModal();">
+          <div class="mobile-action-icon step-1-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <div class="mobile-action-text">
+            <div class="action-title">Step 1: Create New Story</div>
+            <div class="action-desc">Define a new anime series plot &amp; aesthetic</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="mobile-action-row" onclick="closeModal('mobile-action-sheet'); openModal('new-part-modal');">
+          <div class="mobile-action-icon step-2-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </div>
+          <div class="mobile-action-text">
+            <div class="action-title">Step 2: Add Next Part</div>
+            <div class="action-desc">Add another story chapter or episode</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="mobile-action-row" onclick="closeModal('mobile-action-sheet'); openCreateSceneModal();">
+          <div class="mobile-action-icon step-3-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
+              <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/>
+            </svg>
+          </div>
+          <div class="mobile-action-text">
+            <div class="action-title">Step 3: Add Visual Scene</div>
+            <div class="action-desc">Add a new scene with AI visual prompt</div>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/api.js"></script>
+  <script src="/js/components.js"></script>
+  <script src="/js/app.js"></script>
+
+  <script>
+    // Hook up switch team modal population
+    document.querySelector('.collaborator-pill').addEventListener('click', () => {
+      const listEl = document.getElementById('switch-team-list');
+      if (listEl) {
+        listEl.innerHTML = '';
+        state.team.forEach(m => {
+          const isMe = state.currentUser.username === m.username;
+          const item = document.createElement('div');
+          item.className = 'glass-panel';
+          item.style.padding = '0.75rem 1rem';
+          item.style.display = 'flex';
+          item.style.alignItems = 'center';
+          item.style.justifyContent = 'space-between';
+          item.style.cursor = 'pointer';
+          item.style.border = isMe ? '2px solid var(--primary)' : '1px solid var(--border-glass)';
+          item.onclick = () => {
+            switchCurrentUser(m.username);
+            closeModal('switch-team-modal');
+          };
+
+          const initials = getInitials(m.display_name);
+
+          item.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: ${m.avatar_color || '#4f46e5'}; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem;">
+                ${initials}
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text-main);">${m.display_name}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${m.role}</div>
+              </div>
+            </div>
+            ${isMe ? '<span class="meta-badge badge-status">Active</span>' : '<span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">Switch</span>'}
+          `;
+          listEl.appendChild(item);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

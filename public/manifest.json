@@ -1,0 +1,65 @@
+{
+  "name": "ANIME PLOT STUDIO - Anime Visual Storyboard & Scene Platform",
+  "short_name": "AnimePlot",
+  "description": "Collaborative Anime Series Storyboard, Screenplay & Scene Visual Generation Studio",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#090d16",
+  "theme_color": "#4f46e5",
+  "id": "anime-plot-studio-pwa",
+  "categories": ["entertainment", "productivity", "graphics", "photo"],
+  "lang": "en",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/assets/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Anime Story",
+      "short_name": "New Story",
+      "description": "Create a new anime series plot",
+      "url": "/#create-story",
+      "icons": [{ "src": "/assets/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Add Scene",
+      "short_name": "New Scene",
+      "description": "Add a new scene to active story",
+      "url": "/#create-scene",
+      "icons": [{ "src": "/assets/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Prompt Studio",
+      "short_name": "Prompts",
+      "description": "Explore AI anime aesthetic prompts",
+      "url": "/#tab-prompts",
+      "icons": [{ "src": "/assets/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
