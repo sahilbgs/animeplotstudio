@@ -236,6 +236,45 @@ const API = {
 
   async togglePublishProject(projectId, isPublished) {
     return this.updateProject(projectId, { is_published: isPublished });
+  },
+
+  // Scene Dialogues (Structured dialogue linked to characters)
+  async getDialogues(sceneId) {
+    return this.request(`/dialogues/scene/${sceneId}`);
+  },
+
+  async addDialogue(sceneId, data) {
+    return this.request(`/dialogues/scene/${sceneId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  },
+
+  async deleteDialogue(dialogueId) {
+    return this.request(`/dialogues/${dialogueId}`, { method: 'DELETE' });
+  },
+
+  // Submit scene to finalize and update Book Preview
+  async submitScene(sceneId, status = 'Submitted') {
+    return this.request(`/scenes/${sceneId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+  },
+
+  // Complete Story Book Preview
+  async getBook(projectId) {
+    return this.request(`/book/project/${projectId}`);
+  },
+
+  async updateCharacter(id, charData) {
+    return this.request(`/characters/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(charData)
+    });
   }
 };
 

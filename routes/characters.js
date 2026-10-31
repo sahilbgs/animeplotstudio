@@ -49,6 +49,36 @@ router.post('/project/:projectId', async (req, res) => {
   }
 });
 
+// UPDATE character
+router.put('/:id', async (req, res) => {
+  try {
+    const charId = req.params.id;
+    const { name, japanese_name, role, personality, appearance, visual_prompt_tags, avatar_url } = req.body;
+
+    const result = await db.query(`
+      UPDATE characters SET
+        name = COALESCE($1, name),
+        japanese_name = COALESCE($2, japanese_name),
+        role = COALESCE($3, role),
+        personality = COALESCE($4, personality),
+        appearance = COALESCE($5, appearance),
+        visual_prompt_tags = COALESCE($6, visual_prompt_tags),
+        avatar_url = COALESCE($7, avatar_url)
+      WHERE id = $8
+      RETURNING *
+    `, [name, japanese_name, role, personality, appearance, visual_prompt_tags, avatar_url, charId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Character not found' });
+    }
+
+    res.json({ success: true, character: result.rows[0], message: 'Character updated successfully' });
+  } catch (err) {
+    console.error('Error updating character:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // DELETE character
 router.delete('/:id', async (req, res) => {
   try {

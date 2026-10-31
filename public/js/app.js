@@ -657,7 +657,7 @@ function renderPartsBar() {
 }
 
 // Render Scenes Grid (Storyboard View)
-function renderScenesView() {
+async function renderScenesView() {
   const container = document.getElementById('scenes-grid');
   const banner = document.getElementById('active-part-banner');
   if (!container) return;
@@ -697,13 +697,26 @@ function renderScenesView() {
     return;
   }
 
+  // Fetch dialogues for all scenes in parallel
+  const dialoguesByScene = {};
+  await Promise.all(state.scenes.map(async (s) => {
+    try {
+      const res = await API.getDialogues(s.id);
+      dialoguesByScene[s.id] = res.dialogues || [];
+    } catch(e) {
+      dialoguesByScene[s.id] = [];
+    }
+  }));
+
   state.scenes.forEach(scene => {
     const card = document.createElement('div');
     card.className = 'scene-card';
     const primaryImgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
     const hasArt = scene.primary_image && !scene.primary_image.includes('shibuya_rain_establishing.svg');
     const isVideo = primaryImgUrl && /\.(mp4|webm|mov)$/i.test(primaryImgUrl);
+    const isSubmitted = scene.status === 'Submitted';
     const promptToCopy = scene.visual_prompt || scene.narrative_script || '';
+    const sceneDialogues = dialoguesByScene[scene.id] || [];
 
     card.innerHTML = `
       <div class="scene-visual-wrap">
@@ -714,7 +727,9 @@ function renderScenesView() {
         `}
         <div class="scene-badge-row">
           <div class="scene-number-tag">SCENE ${scene.scene_number}</div>
-          ${isVideo ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">🎬 Video Ready</div>' : (hasArt ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">✨ Art Ready</div>' : '<div class="scene-status-tag" style="background: rgba(245, 158, 11, 0.95); color: #fff;">⏳ Awaiting Art</div>')}
+          ${isSubmitted ? `
+            <div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff; font-weight: 800; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);">✅ Submitted to Book</div>
+          ` : (isVideo ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">🎬 Video Ready</div>' : (hasArt ? '<div class="scene-status-tag" style="background: rgba(16, 185, 129, 0.95); color: #fff;">✨ Art Ready</div>' : '<div class="scene-status-tag" style="background: rgba(245, 158, 11, 0.95); color: #fff;">⏳ Awaiting Art</div>'))}
         </div>
         <div class="scene-upload-quick-overlay">
           <button class="quick-action-btn" onclick="openSceneUploadModal(event, ${scene.id})">
@@ -724,9 +739,9 @@ function renderScenesView() {
       </div>
 
       <div class="scene-body">
-        <!-- Producer & Creator Action Strip: Copy Prompt, Upload Art/Video, Add Dialogue -->
-        <div class="scene-manager-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Sora / Kling">
+        <!-- Producer & Creator Action Strip: Copy Prompt, Upload Art/Video, Add Dialogue, Submit Scene -->
+        <div class="scene-manager-bar" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+          <button class="btn-copy-prompt-glow" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})" title="1-Tap Copy Prompt for Midjourney / Sora / Kling">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
             <span>Copy AI Prompt</span>
           </button>
@@ -737,9 +752,20 @@ function renderScenesView() {
           ${hasArt && !isVideo ? `
             <button class="btn-dialog-art-direct" onclick="openDialogueStudio(${scene.id}, '${primaryImgUrl}', '${escapeJs(scene.title)}', '${escapeJs(scene.dialogue || '')}')" title="Add Dialogue / Subtitles on this Image and Download" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 700; border-radius: 10px; padding: 0.5rem 0.85rem; font-size: 0.82rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span>💬 Add Dialogue &amp; Download</span>
+              <span>💬 Dialogue Canvas</span>
             </button>
           ` : ''}
+
+          <!-- Submit Scene Action Button -->
+          ${isSubmitted ? `
+            <button onclick="submitSceneToBook(${scene.id}, 'Draft')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; font-weight: 700; border-radius: 10px; padding: 0.5rem 0.85rem; font-size: 0.82rem; cursor: pointer; margin-left: auto;">
+              ↩ Unsubmit (Edit)
+            </button>
+          ` : `
+            <button onclick="submitSceneToBook(${scene.id}, 'Submitted')" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; border-radius: 10px; padding: 0.5rem 0.95rem; font-size: 0.82rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35); margin-left: auto;">
+              ✅ Submit Scene
+            </button>
+          `}
         </div>
 
         <div class="scene-title-row">
@@ -757,7 +783,7 @@ function renderScenesView() {
         <div class="prompt-box-card">
           <div class="prompt-box-header">
             <span class="prompt-label">AI Visual Prompt (Midjourney / Sora / Kling)</span>
-            <button class="copy-prompt-btn" onclick="copyScenePromptForBunny('${escapeJs(promptToCopy)}', ${scene.scene_number})">
+            <button class="copy-prompt-btn" onclick="copyScenePromptForSahil('${escapeJs(promptToCopy)}', ${scene.scene_number})">
               ${ICONS.copy} Copy Prompt
             </button>
           </div>
@@ -769,21 +795,55 @@ function renderScenesView() {
           ` : ''}
         </div>
 
-        <!-- Narrative Action -->
+        <!-- Narrative Action Script -->
         ${scene.narrative_script ? `
           <div class="scene-story-preview">
             ${escapeHtml(scene.narrative_script)}
           </div>
         ` : ''}
 
-        <!-- Script Dialogue -->
-        ${scene.dialogue ? `
-          <div class="scene-dialogue-preview">
-            <strong>Dialogue:</strong> ${escapeHtml(scene.dialogue)}
+        <!-- Character Dialogues Section -->
+        <div class="scene-dialogues-container" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 1rem; margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div style="font-size: 0.82rem; font-weight: 800; color: #34d399; text-transform: uppercase; display: flex; align-items: center; gap: 0.4rem;">
+              <span>💬</span>
+              <span>Character Dialogues (${sceneDialogues.length})</span>
+            </div>
+            <button class="btn btn-sm btn-secondary" onclick="openAddSceneDialogueModal(${scene.id})" style="font-size: 0.78rem; padding: 0.25rem 0.65rem; border-radius: 8px; font-weight: 700; color: #34d399; border-color: rgba(52,211,153,0.3);">
+              + Add Dialogue
+            </button>
           </div>
-        ` : ''}
 
-        <div class="scene-footer">
+          ${sceneDialogues.length > 0 ? `
+            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+              ${sceneDialogues.map(d => `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; background: rgba(0,0,0,0.3); padding: 0.65rem 0.85rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+                  <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
+                    <img src="${d.avatar_url || '/uploads/scenes/scene_library_discovery.jpg'}" alt="${escapeHtml(d.character_name)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #ec4899; flex-shrink: 0;" onerror="this.src='/uploads/scenes/scene_library_discovery.jpg'">
+                    <div>
+                      <div style="font-size: 0.78rem; font-weight: 700; color: #f472b6;">
+                        ${escapeHtml(d.character_name)}
+                        ${d.character_role ? `<span style="color: #64748b; font-weight: 400; font-size: 0.72rem;"> • ${escapeHtml(d.character_role)}</span>` : ''}
+                      </div>
+                      <div style="font-size: 0.88rem; color: #e2e8f0; margin-top: 0.15rem; line-height: 1.4;">
+                        &ldquo;${escapeHtml(d.dialogue_text)}&rdquo;
+                      </div>
+                    </div>
+                  </div>
+                  <button onclick="deleteSceneDialogue(${scene.id}, ${d.id})" style="background: none; border: none; color: #64748b; cursor: pointer; font-size: 0.85rem; padding: 2px 6px;" title="Delete dialogue">
+                    &times;
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">
+              No dialogues attached yet. Click &ldquo;+ Add Dialogue&rdquo; to select a character and add lines for this scene.
+            </div>
+          `}
+        </div>
+
+        <div class="scene-footer" style="margin-top: 1rem;">
           <span>By: <strong>${escapeHtml(scene.created_by || 'Story Writer')}</strong></span>
           <div class="scene-action-buttons">
             <button class="btn-icon" title="Edit Scene Details" onclick="openEditSceneModal(${scene.id})">
@@ -801,72 +861,522 @@ function renderScenesView() {
   });
 }
 
-// 1-Tap Copy Scene Prompt for Bunny (AI Art Producer)
-function copyScenePromptForBunny(promptText, sceneNum) {
+// 1-Tap Copy Scene Prompt
+function copyScenePromptForSahil(promptText, sceneNum) {
   copyToClipboard(promptText, `Scene ${sceneNum} Prompt`);
   showToast(`Scene ${sceneNum} Prompt copied! Ready for Midjourney / Sora / Kling.`, 'success');
 }
-const copyScenePromptForSahil = copyScenePromptForBunny;
+const copyScenePromptForBunny = copyScenePromptForSahil;
 
-// Render Screenplay Reader View
-function renderReaderView() {
-  const container = document.getElementById('reader-content');
-  if (!container || !state.activePart) return;
+// Submit Scene to finalize for Book Preview
+async function submitSceneToBook(sceneId, status = 'Submitted') {
+  try {
+    await API.submitScene(sceneId, status);
+    showToast(`Scene ${status === 'Submitted' ? 'marked as Submitted and published to Book Preview!' : 'set back to In Progress'}`, 'success');
+    const scene = state.scenes.find(s => s.id === sceneId);
+    if (scene) scene.status = status;
+    renderScenesView();
+    if (state.activeTab === 'reader') renderReaderView();
+  } catch (err) {
+    showToast('Failed to submit scene: ' + err.message, 'error');
+  }
+}
 
-  const part = state.activePart;
-  let html = `
-    <div class="reader-header" style="text-align: center;">
-      <img src="/assets/logo.jpg" alt="ANIME PLOT STUDIO Logo" style="width: 68px; height: 68px; border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(15,23,42,0.3); margin-bottom: 0.85rem; border: 1px solid var(--border-glass); object-fit: cover;">
-      <div style="color: var(--accent-cyan); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 0.5rem;">
-        ${state.activeProject ? state.activeProject.title : 'Anime Story'}
-      </div>
-      <h1 style="font-size: 2.2rem; font-weight: 900; margin-bottom: 0.75rem;">
-        PART ${part.part_number}: ${part.title}
-      </h1>
-      <p style="color: var(--text-muted); font-size: 1rem; max-width: 700px; margin: 0 auto;">
-        ${part.summary || ''}
-      </p>
-    </div>
-  `;
+// Scene Dialogues Modals & Handlers
+function openAddSceneDialogueModal(sceneId) {
+  document.getElementById('dialogue-target-scene-id').value = sceneId;
+  const charSelect = document.getElementById('dialogue-char-select');
+  charSelect.innerHTML = '';
 
-  if (state.scenes.length === 0) {
-    html += `<div style="text-align: center; color: var(--text-dim); padding: 3rem;">No scenes to read yet.</div>`;
-  } else {
-    state.scenes.forEach(scene => {
-      const imgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
-      html += `
-        <div class="reader-scene-block">
-          <div class="reader-scene-heading">
-            SCENE ${scene.scene_number}: ${scene.location.toUpperCase()} - ${scene.time_of_day.toUpperCase()}
-          </div>
-          <div class="reader-layout-grid">
-            <div>
-              ${scene.narrative_script ? `
-                <div class="reader-action-text">${escapeHtml(scene.narrative_script)}</div>
-              ` : ''}
-
-              ${scene.dialogue ? `
-                <div class="reader-dialogue-block">${escapeHtml(scene.dialogue)}</div>
-              ` : ''}
-
-              <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--accent-cyan);">
-                <strong>Mood:</strong> ${scene.mood} • <strong>Angle:</strong> ${scene.camera_angle}
-              </div>
-            </div>
-
-            <div class="reader-visual-card">
-              <img src="${imgUrl}" alt="${scene.title}" onclick="openLightbox('${imgUrl}', '${scene.title}')" style="cursor: pointer;">
-              <div class="reader-prompt-caption">
-                ${escapeHtml(scene.visual_prompt.slice(0, 140))}...
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+  if (state.characters && state.characters.length > 0) {
+    state.characters.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = `${c.name} (${c.role || 'Character'})`;
+      charSelect.appendChild(opt);
     });
   }
 
-  container.innerHTML = html;
+  const optNarrator = document.createElement('option');
+  optNarrator.value = 'narrator';
+  optNarrator.textContent = '📖 Narrator / Storyteller';
+  charSelect.appendChild(optNarrator);
+
+  const optCustom = document.createElement('option');
+  optCustom.value = 'custom';
+  optCustom.textContent = '✏️ Custom Speaker Name...';
+  charSelect.appendChild(optCustom);
+
+  document.getElementById('dialogue-custom-char-wrap').style.display = 'none';
+  document.getElementById('dialogue-content-text').value = '';
+  openModal('scene-dialogue-modal');
+}
+
+function onDialogueCharacterChange(val) {
+  const customWrap = document.getElementById('dialogue-custom-char-wrap');
+  if (customWrap) {
+    customWrap.style.display = val === 'custom' ? 'block' : 'none';
+  }
+}
+
+async function submitAddSceneDialogue() {
+  const sceneId = document.getElementById('dialogue-target-scene-id').value;
+  const charSelect = document.getElementById('dialogue-char-select').value;
+  const customName = document.getElementById('dialogue-custom-char-name').value.trim();
+  const text = document.getElementById('dialogue-content-text').value.trim();
+
+  if (!text) {
+    showToast('Dialogue text is required', 'error');
+    return;
+  }
+
+  let character_id = null;
+  let character_name = '';
+
+  if (charSelect === 'narrator') {
+    character_name = 'Narrator';
+  } else if (charSelect === 'custom') {
+    character_name = customName || 'Voice';
+  } else {
+    character_id = parseInt(charSelect, 10);
+    const found = state.characters.find(c => c.id === character_id);
+    character_name = found ? found.name : 'Character';
+  }
+
+  try {
+    await API.addDialogue(sceneId, {
+      character_id,
+      character_name,
+      dialogue_text: text
+    });
+    showToast(`Dialogue for ${character_name} added to Scene!`, 'success');
+    closeModal('scene-dialogue-modal');
+    renderScenesView();
+    if (state.activeTab === 'reader') renderReaderView();
+  } catch (err) {
+    showToast('Failed to add dialogue: ' + err.message, 'error');
+  }
+}
+
+async function deleteSceneDialogue(sceneId, dialogueId) {
+  try {
+    await API.deleteDialogue(dialogueId);
+    showToast('Dialogue removed', 'info');
+    renderScenesView();
+    if (state.activeTab === 'reader') renderReaderView();
+  } catch (err) {
+    showToast('Failed to delete dialogue: ' + err.message, 'error');
+  }
+}
+
+// Render Complete Illustrated Story Book Preview (Screen 8)
+async function renderReaderView(filterMode = 'all') {
+  const container = document.getElementById('reader-content');
+  if (!container) return;
+
+  if (!state.activeProject) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 4rem; color: var(--text-muted);">
+        <h3>No Story Selected</h3>
+        <p>Please select an anime story from the studio workspace to preview the complete story book.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--text-muted);">Loading Illustrated Story Book...</div>';
+
+  try {
+    const data = await API.getBook(state.activeProject.id);
+    const book = data.book;
+    if (!book) throw new Error('Book data not available');
+
+    const proj = book.project || {};
+    const chars = book.characters || [];
+    const parts = book.parts || [];
+    const stats = book.stats || {};
+
+    let html = `
+      <!-- Book Controls Top Bar -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 1rem 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #94a3b8;">Filter Scenes:</span>
+          <button class="btn btn-sm ${filterMode === 'all' ? 'btn-primary' : 'btn-secondary'}" onclick="renderReaderView('all')" style="border-radius: 8px;">
+            All Scenes (${stats.total_scenes || 0})
+          </button>
+          <button class="btn btn-sm ${filterMode === 'submitted' ? 'btn-primary' : 'btn-secondary'}" onclick="renderReaderView('submitted')" style="border-radius: 8px;">
+            ✅ Submitted Only (${stats.submitted_scenes || 0})
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button class="btn btn-secondary btn-sm" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 8px;">
+            🖨️ Print / Save PDF
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="switchTab('storyboard')" style="border-radius: 8px;">
+            ✍️ Edit in Studio
+          </button>
+        </div>
+      </div>
+
+      <!-- Illustrated Story Book Cover Page -->
+      <div class="book-cover-panel glass-panel" style="padding: 3.5rem 2.5rem; text-align: center; border-radius: 24px; margin-bottom: 3rem; background: radial-gradient(circle at 50% 30%, rgba(219,39,119,0.18) 0%, rgba(15,23,42,0.92) 80%); border: 1px solid rgba(236,72,153,0.3); box-shadow: 0 16px 40px rgba(0,0,0,0.5);">
+        <img src="${proj.cover_image || '/assets/logo.jpg'}" alt="Book Cover" style="width: 140px; height: 140px; border-radius: 20px; object-fit: cover; margin-bottom: 1.5rem; border: 2px solid rgba(236,72,153,0.5); box-shadow: 0 8px 24px rgba(219,39,119,0.35);">
+        
+        <div style="font-size: 0.82rem; font-weight: 800; color: #f472b6; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem;">
+          OFFICIAL ANIME STORYBOOK
+        </div>
+
+        <h1 style="font-size: 3rem; font-weight: 900; line-height: 1.15; margin-bottom: 0.75rem; background: linear-gradient(135deg, #ffffff 40%, #f472b6 80%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+          ${escapeHtml(proj.title)}
+        </h1>
+
+        ${proj.tagline ? `
+          <div style="font-size: 1.2rem; font-style: italic; color: #cbd5e1; margin-bottom: 1.5rem;">
+            &ldquo;${escapeHtml(proj.tagline)}&rdquo;
+          </div>
+        ` : ''}
+
+        ${proj.synopsis ? `
+          <p style="font-size: 1.05rem; color: #94a3b8; max-width: 760px; margin: 0 auto 2rem auto; line-height: 1.7;">
+            ${escapeHtml(proj.synopsis)}
+          </p>
+        ` : ''}
+
+        <!-- Creator Credits -->
+        <div style="display: inline-flex; align-items: center; gap: 2rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 0.6rem 2rem; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.1rem;">👑</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #f472b6;">Jiya</span>
+            <span style="font-size: 0.78rem; color: #94a3b8;">(Founder &amp; Story)</span>
+          </div>
+          <div style="width: 1px; height: 16px; background: rgba(255,255,255,0.2);"></div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.1rem;">🎨</span>
+            <span style="font-size: 0.9rem; font-weight: 700; color: #818cf8;">Sahil</span>
+            <span style="font-size: 0.78rem; color: #94a3b8;">(Manager &amp; Visuals)</span>
+          </div>
+        </div>
+
+        <!-- Book Stats Row -->
+        <div style="display: flex; justify-content: center; gap: 2rem; color: #94a3b8; font-size: 0.85rem; font-weight: 600;">
+          <span>📚 ${stats.total_parts || 0} Parts</span>
+          <span>🎬 ${stats.total_scenes || 0} Scenes</span>
+          <span>✅ ${stats.submitted_scenes || 0} Finalized</span>
+        </div>
+      </div>
+
+      <!-- Character Cast Roster Section -->
+      ${chars.length > 0 ? `
+        <div style="margin-bottom: 3.5rem;">
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.75rem; font-weight: 800; color: #f472b6; letter-spacing: 0.1em; text-transform: uppercase;">DRAMATIS PERSONAE</div>
+            <h2 style="font-size: 1.8rem; font-weight: 900; color: #fff; margin-top: 0.25rem;">Cast of Characters</h2>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            ${chars.map(c => `
+              <div class="glass-panel" style="padding: 1.25rem; border-radius: 16px; background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.08); display: flex; gap: 1rem; align-items: center;">
+                <img src="${c.avatar_url || '/uploads/scenes/scene_library_discovery.jpg'}" alt="${escapeHtml(c.name)}" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(236,72,153,0.3);" onerror="this.src='/uploads/scenes/scene_library_discovery.jpg'">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: baseline; gap: 0.4rem;">
+                    <strong style="color: #fff; font-size: 1.05rem;">${escapeHtml(c.name)}</strong>
+                    ${c.japanese_name ? `<span style="font-size: 0.8rem; color: #f472b6;">${escapeHtml(c.japanese_name)}</span>` : ''}
+                  </div>
+                  <div style="font-size: 0.75rem; color: #f472b6; font-weight: 700; margin-top: 0.2rem;">${escapeHtml(c.role || '')}</div>
+                  <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; line-height: 1.3;">${escapeHtml(c.personality || '')}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Sequential Story Chapters (Parts) & Scenes -->
+    `;
+
+    if (parts.length === 0) {
+      html += `<div style="text-align: center; color: var(--text-dim); padding: 3rem;">No story parts created yet. Create a part in the Studio Workspace to start reading.</div>`;
+    } else {
+      parts.forEach(part => {
+        let scenesToShow = part.scenes || [];
+        if (filterMode === 'submitted') {
+          scenesToShow = scenesToShow.filter(s => s.status === 'Submitted');
+        }
+
+        html += `
+          <div class="book-part-section" style="margin-bottom: 4rem;">
+            <!-- Part Header Banner -->
+            <div style="background: linear-gradient(135deg, rgba(30,27,75,0.9) 0%, rgba(15,23,42,0.95) 100%); border-radius: 18px; padding: 1.75rem 2rem; border-left: 5px solid #ec4899; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 2rem;">
+              <div style="font-size: 0.8rem; font-weight: 800; color: #f472b6; text-transform: uppercase; letter-spacing: 0.08em;">CHAPTER / PART ${part.part_number}</div>
+              <h2 style="font-size: 1.9rem; font-weight: 900; color: #fff; margin: 0.25rem 0 0.5rem 0;">${escapeHtml(part.title)}</h2>
+              ${part.summary ? `<p style="font-size: 0.95rem; color: #94a3b8; line-height: 1.5; margin: 0;">${escapeHtml(part.summary)}</p>` : ''}
+            </div>
+        `;
+
+        if (scenesToShow.length === 0) {
+          html += `
+            <div style="text-align: center; color: #64748b; padding: 2rem; background: rgba(15,23,42,0.4); border-radius: 14px; margin-bottom: 2rem;">
+              ${filterMode === 'submitted' ? 'No submitted scenes in this part yet.' : 'No scenes created in this part yet.'}
+            </div>
+          `;
+        } else {
+          scenesToShow.forEach(scene => {
+            const imgUrl = scene.primary_image || '/uploads/scenes/shibuya_rain_establishing.svg';
+            const isVideo = imgUrl && /\.(mp4|webm|mov)$/i.test(imgUrl);
+            const isSubmitted = scene.status === 'Submitted';
+
+            html += `
+              <div class="book-scene-panel glass-panel" style="margin-bottom: 2.5rem; padding: 2rem; border-radius: 20px; background: rgba(15,23,42,0.75); border: 1px solid rgba(255,255,255,0.08);">
+                <!-- Scene Heading -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <span style="background: rgba(236,72,153,0.15); color: #f472b6; font-weight: 800; font-size: 0.75rem; padding: 0.25rem 0.65rem; border-radius: 999px;">
+                      SCENE ${scene.scene_number}
+                    </span>
+                    <h3 style="font-size: 1.35rem; font-weight: 800; color: #fff; display: inline-block; margin: 0 0 0 0.5rem;">
+                      ${escapeHtml(scene.title)}
+                    </h3>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    ${isSubmitted ? `
+                      <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid rgba(16,185,129,0.3);">
+                        ✅ Finalized
+                      </span>
+                    ` : `
+                      <span style="background: rgba(245,158,11,0.15); color: #fbbf24; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px;">
+                        ⏳ In Progress
+                      </span>
+                    `}
+                    <span style="font-size: 0.78rem; color: #64748b;">${escapeHtml(scene.location)} • ${escapeHtml(scene.time_of_day)}</span>
+                  </div>
+                </div>
+
+                <!-- Scene Visual Media Card -->
+                <div style="margin-bottom: 1.5rem; border-radius: 14px; overflow: hidden; background: #000; box-shadow: 0 8px 24px rgba(0,0,0,0.6); position: relative;">
+                  ${isVideo ? `
+                    <video controls src="${imgUrl}" playsinline style="width: 100%; max-height: 480px; object-fit: contain; display: block;"></video>
+                  ` : `
+                    <img src="${imgUrl}" alt="${escapeHtml(scene.title)}" onclick="openLightbox('${imgUrl}', '${escapeJs(scene.title)}')" style="width: 100%; max-height: 480px; object-fit: cover; display: block; cursor: pointer; transition: transform 0.2s;" onerror="this.src='/uploads/scenes/shibuya_rain_establishing.svg'">
+                  `}
+                </div>
+
+                <!-- Narrative Script if any -->
+                ${scene.narrative_script ? `
+                  <div style="background: rgba(0,0,0,0.25); border-left: 3px solid #818cf8; padding: 0.85rem 1.25rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.92rem; color: #cbd5e1; line-height: 1.6; font-style: italic;">
+                    ${escapeHtml(scene.narrative_script)}
+                  </div>
+                ` : ''}
+
+                <!-- Manga / Anime Character Dialogue Bubbles -->
+                <div class="book-dialogues-flow" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                  ${(scene.dialogues && scene.dialogues.length > 0) ? scene.dialogues.map(d => {
+                    const isNarrator = d.character_name.toLowerCase().includes('narrator');
+                    const charAvatar = d.avatar_url || '/uploads/scenes/scene_library_discovery.jpg';
+
+                    return `
+                      <div class="dialogue-speech-item" style="display: flex; gap: 0.85rem; align-items: flex-start;">
+                        ${!isNarrator ? `
+                          <img src="${charAvatar}" alt="${escapeHtml(d.character_name)}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #ec4899; flex-shrink: 0;" onerror="this.src='/uploads/scenes/scene_library_discovery.jpg'">
+                        ` : `
+                          <div style="width: 44px; height: 44px; border-radius: 50%; background: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">📖</div>
+                        `}
+                        <div style="flex: 1;">
+                          <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <strong style="font-size: 0.88rem; color: #f472b6;">${escapeHtml(d.character_name)}</strong>
+                            ${d.character_role ? `<span style="font-size: 0.72rem; color: #94a3b8;">${escapeHtml(d.character_role)}</span>` : ''}
+                          </div>
+                          <!-- Manga Dialogue Balloon -->
+                          <div class="manga-speech-balloon" style="background: #ffffff; color: #0f172a; padding: 0.75rem 1.1rem; border-radius: 14px; border-top-left-radius: 2px; font-weight: 600; font-size: 0.95rem; line-height: 1.45; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: inline-block; max-width: 100%;">
+                            ${escapeHtml(d.dialogue_text)}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('') : `
+                    ${scene.dialogue ? `
+                      <div class="manga-speech-balloon" style="background: #ffffff; color: #0f172a; padding: 0.75rem 1.1rem; border-radius: 14px; font-weight: 600; font-size: 0.95rem; line-height: 1.45;">
+                        ${escapeHtml(scene.dialogue)}
+                      </div>
+                    ` : `
+                      <div style="font-size: 0.82rem; color: #64748b; font-style: italic;">
+                        No character dialogues attached yet. Use &ldquo;+ Add Dialogue&rdquo; on this scene card in the Studio Workspace.
+                      </div>
+                    `}
+                  `}
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        html += `</div>`; // Close book-part-section
+      });
+    }
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error('Error rendering book preview:', err);
+    container.innerHTML = `<div style="text-align: center; color: #f87171; padding: 3rem;">Failed to load Book Preview: ${err.message}</div>`;
+  }
+}
+
+// Characters View & CRUD Controller (Screen 7)
+async function renderCharactersView() {
+  const container = document.getElementById('characters-grid');
+  if (!container) return;
+
+  if (!state.activeProject) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">
+        <h3>No Story Selected</h3>
+        <p>Please select an anime story first to view and manage its characters.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-muted);">Loading character library...</div>';
+
+  try {
+    const data = await API.getCharacters(state.activeProject.id);
+    state.characters = data.characters || [];
+
+    if (state.characters.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1/-1; text-align: center; padding: 4rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 2px dashed var(--border-glass);">
+          <div style="font-size: 2.5rem; margin-bottom: 1rem;">👥</div>
+          <h3 style="margin-bottom: 0.5rem;">No Characters in this Story Yet</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Maintain character photos, names, behaviour, and descriptions for visual generation &amp; dialogues.</p>
+          <button class="btn btn-primary" onclick="openCreateCharacterModal()">
+            + Add First Character
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = '';
+    state.characters.forEach(char => {
+      const card = document.createElement('div');
+      card.className = 'character-card glass-panel';
+      card.style.cssText = 'padding: 1.5rem; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1); background: rgba(15,23,42,0.7); display: flex; flex-direction: column; gap: 1rem; position: relative; overflow: hidden;';
+
+      const avatarSrc = char.avatar_url || '/uploads/scenes/scene_library_discovery.jpg';
+
+      card.innerHTML = `
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <img src="${avatarSrc}" alt="${escapeHtml(char.name)}" style="width: 76px; height: 76px; border-radius: 16px; object-fit: cover; border: 2px solid rgba(236, 72, 153, 0.4); box-shadow: 0 4px 14px rgba(0,0,0,0.4);" onerror="this.src='/uploads/scenes/scene_library_discovery.jpg'">
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0;">${escapeHtml(char.name)}</h3>
+              ${char.japanese_name ? `<span style="font-size: 0.85rem; color: #f472b6; font-weight: 600;">${escapeHtml(char.japanese_name)}</span>` : ''}
+            </div>
+            <div style="margin-top: 0.35rem; display: inline-block; background: rgba(236, 72, 153, 0.15); color: #f472b6; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.65rem; border-radius: 999px; border: 1px solid rgba(236, 72, 153, 0.3);">
+              ${escapeHtml(char.role || 'Main Character')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Personality / Behaviour -->
+        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 0.75rem 1rem; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="font-size: 0.72rem; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 0.25rem;">Behaviour &amp; Personality</div>
+          <div style="font-size: 0.9rem; color: #e2e8f0; line-height: 1.4;">${escapeHtml(char.personality || 'Determined and courageous')}</div>
+        </div>
+
+        <!-- Description / Appearance -->
+        ${char.appearance ? `
+          <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+            <strong style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Appearance:</strong> ${escapeHtml(char.appearance)}
+          </div>
+        ` : ''}
+
+        <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+          <button class="btn btn-sm btn-secondary" onclick="openEditCharacterModal(${char.id})" style="font-size: 0.8rem; padding: 0.35rem 0.8rem; border-radius: 8px;">
+            ✏️ Edit Character
+          </button>
+          <button class="btn btn-sm btn-secondary" onclick="confirmDeleteCharacter(${char.id})" style="font-size: 0.8rem; padding: 0.35rem 0.65rem; color: #f87171; border-radius: 8px;" title="Delete Character">
+            🗑️
+          </button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error('Error rendering characters view:', err);
+    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #f87171; padding: 2rem;">Failed to load characters: ${err.message}</div>`;
+  }
+}
+
+function openCreateCharacterModal() {
+  document.getElementById('character-modal-title').textContent = '+ Add Story Character';
+  document.getElementById('char-edit-id').value = '';
+  document.getElementById('char-name-input').value = '';
+  document.getElementById('char-jp-name-input').value = '';
+  document.getElementById('char-role-input').value = 'Protagonist';
+  document.getElementById('char-personality-input').value = '';
+  document.getElementById('char-appearance-input').value = '';
+  document.getElementById('char-avatar-input').value = '';
+  openModal('new-character-modal');
+}
+
+function openEditCharacterModal(charId) {
+  const char = state.characters.find(c => c.id === charId);
+  if (!char) return;
+  document.getElementById('character-modal-title').textContent = 'Edit Character';
+  document.getElementById('char-edit-id').value = char.id;
+  document.getElementById('char-name-input').value = char.name || '';
+  document.getElementById('char-jp-name-input').value = char.japanese_name || '';
+  document.getElementById('char-role-input').value = char.role || '';
+  document.getElementById('char-personality-input').value = char.personality || '';
+  document.getElementById('char-appearance-input').value = char.appearance || '';
+  document.getElementById('char-avatar-input').value = char.avatar_url || '';
+  openModal('new-character-modal');
+}
+
+async function submitSaveCharacter() {
+  const editId = document.getElementById('char-edit-id').value;
+  const name = document.getElementById('char-name-input').value.trim();
+  const japanese_name = document.getElementById('char-jp-name-input').value.trim();
+  const role = document.getElementById('char-role-input').value.trim();
+  const personality = document.getElementById('char-personality-input').value.trim();
+  const appearance = document.getElementById('char-appearance-input').value.trim();
+  const avatar_url = document.getElementById('char-avatar-input').value.trim();
+
+  if (!name) {
+    showToast('Character name is required', 'error');
+    return;
+  }
+  if (!state.activeProject) {
+    showToast('No active story selected', 'error');
+    return;
+  }
+
+  try {
+    const payload = { name, japanese_name, role, personality, appearance, avatar_url };
+    if (editId) {
+      await API.updateCharacter(editId, payload);
+      showToast(`Character "${name}" updated!`, 'success');
+    } else {
+      await API.createCharacter(state.activeProject.id, payload);
+      showToast(`Character "${name}" created and added to library!`, 'success');
+    }
+    closeModal('new-character-modal');
+    await renderCharactersView();
+    if (state.activeTab === 'reader') renderReaderView();
+  } catch (err) {
+    showToast('Failed to save character: ' + err.message, 'error');
+  }
+}
+
+async function confirmDeleteCharacter(charId) {
+  if (!confirm('Are you sure you want to delete this character?')) return;
+  try {
+    await API.deleteCharacter(charId);
+    showToast('Character deleted', 'info');
+    await renderCharactersView();
+  } catch (err) {
+    showToast('Failed to delete character: ' + err.message, 'error');
+  }
 }
 
 // Render Prompt Studio helper presets
@@ -950,9 +1460,9 @@ function renderTeamView() {
 function switchCurrentUser(username) {
   let member = state.team ? state.team.find(t => t.username.toLowerCase() === username.toLowerCase()) : null;
   if (!member && (username === 'jiya' || username === 'mewo')) {
-    member = { id: 4, username: 'jiya', display_name: 'Jiya', role: 'Story Writer & Creator', avatar_color: '#db2777', avatar_emoji: '👑' };
+    member = { id: 4, username: 'jiya', display_name: 'Jiya', role: 'Founder', avatar_color: '#db2777', avatar_emoji: '👑' };
   } else if (!member && (username === 'sahil' || username === 'bunny')) {
-    member = { id: 1, username: 'sahil', display_name: 'Sahil', role: 'Visual Producer & AI Artist', avatar_color: '#4f46e5', avatar_emoji: '🎨' };
+    member = { id: 1, username: 'sahil', display_name: 'Sahil', role: 'Manager', avatar_color: '#4f46e5', avatar_emoji: '🎨' };
   }
   if (member) {
     state.currentUser = member;
@@ -1300,12 +1810,14 @@ function switchTab(tabName) {
 
   const vLanding = document.getElementById('view-landing');
   const vStoryboard = document.getElementById('view-storyboard');
+  const vCharacters = document.getElementById('view-characters');
   const vReader = document.getElementById('view-reader');
   const vPrompts = document.getElementById('view-prompts');
   const vTeam = document.getElementById('view-team');
 
   if (vLanding) vLanding.style.display = tabName === 'landing' ? 'block' : 'none';
   if (vStoryboard) vStoryboard.style.display = tabName === 'storyboard' ? 'block' : 'none';
+  if (vCharacters) vCharacters.style.display = tabName === 'characters' ? 'block' : 'none';
   if (vReader) vReader.style.display = tabName === 'reader' ? 'block' : 'none';
   if (vPrompts) vPrompts.style.display = tabName === 'prompts' ? 'block' : 'none';
   if (vTeam) vTeam.style.display = tabName === 'team' ? 'block' : 'none';
@@ -1316,6 +1828,7 @@ function switchTab(tabName) {
     renderScenesView();
     updateStepper();
   }
+  if (tabName === 'characters') renderCharactersView();
   if (tabName === 'reader') renderReaderView();
   if (tabName === 'prompts') renderPromptStudio();
   if (tabName === 'team') renderTeamView();

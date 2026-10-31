@@ -206,6 +206,35 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// SUBMIT scene (Finalize and make ready for Book Preview)
+router.post('/:id/submit', async (req, res) => {
+  try {
+    const sceneId = req.params.id;
+    const { status } = req.body;
+    const targetStatus = status || 'Submitted';
+
+    const result = await db.query(`
+      UPDATE scenes 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [targetStatus, sceneId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Scene not found' });
+    }
+
+    res.json({
+      success: true,
+      scene: result.rows[0],
+      message: `Scene marked as ${targetStatus} and published to Book Preview`
+    });
+  } catch (err) {
+    console.error('Error submitting scene:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // DELETE scene
 router.delete('/:id', async (req, res) => {
   try {

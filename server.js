@@ -14,6 +14,8 @@ const charactersRouter = require('./routes/characters');
 const commentsRouter = require('./routes/comments');
 const presetsRouter = require('./routes/presets');
 const authRouter = require('./routes/auth');
+const dialoguesRouter = require('./routes/dialogues');
+const bookRouter = require('./routes/book');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -42,6 +44,8 @@ app.use('/api/scenes', scenesRouter);
 app.use('/api/upload', uploadsRouter);
 app.use('/api/team', teamRouter);
 app.use('/api/characters', charactersRouter);
+app.use('/api/dialogues', dialoguesRouter);
+app.use('/api/book', bookRouter);
 app.use('/api/comments', commentsRouter);
 app.use('/api/prompt-presets', presetsRouter);
 

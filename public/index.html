@@ -26,7 +26,7 @@
   <meta name="msapplication-TileImage" content="/assets/icon-192x192.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="/css/style.css?v=7">
+  <link rel="stylesheet" href="/css/style.css?v=9">
 </head>
 <body>
 
@@ -44,28 +44,34 @@
     <nav class="header-center">
       <button class="nav-tab active" data-tab="landing" onclick="switchTab('landing')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Showcase
+        Home
       </button>
       <button class="nav-tab" data-tab="storyboard" onclick="switchTab('storyboard')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/></svg>
-        Studio Workspace
+        My Story
+      </button>
+      <button class="nav-tab" data-tab="characters" onclick="switchTab('characters')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Characters
       </button>
       <button class="nav-tab" data-tab="reader" onclick="switchTab('reader')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        Screenplay Reader
+        Book Preview
       </button>
       <button class="nav-tab" data-tab="prompts" onclick="switchTab('prompts')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/></svg>
-        Art Direction
-      </button>
-      <button class="nav-tab" data-tab="team" onclick="switchTab('team')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Creative Team
+        Prompts
       </button>
     </nav>
 
-    <!-- Header Actions: Story Selector, + Create Story Button, Collaborator Pill -->
+    <!-- Header Actions: Story Selector, + Create Story Button, Jiya APK, Collaborator Pill -->
     <div class="header-actions">
+      <!-- Direct Native APK Download Link for Jiya -->
+      <a href="/download/AnimePlotStudio-Jiya.apk" download="AnimePlotStudio-Jiya.apk" class="btn btn-secondary btn-apk-download" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; border-radius: 12px; padding: 0.45rem 0.85rem; font-size: 0.82rem; text-decoration: none;" title="Download Jiya's Native Android App (APK)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        <span>📱 Jiya APK</span>
+      </a>
+
       <!-- PWA Install Button -->
       <button id="pwa-install-btn" class="btn btn-primary btn-pwa-install" onclick="installPWA()" title="Install Anime Plot Studio App" style="display: none;">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -137,11 +143,11 @@
         </div>
 
         <h1 style="font-size: 2.85rem; font-weight: 900; line-height: 1.18; margin-bottom: 1rem; background: linear-gradient(135deg, #ffffff 30%, #f472b6 70%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-          Where Stories &amp; Visuals<br>Come Together
+          Where Stories Become Anime.
         </h1>
 
         <p style="font-size: 1.15rem; color: var(--text-secondary); max-width: 660px; margin: 0 auto 2.2rem auto; line-height: 1.6;">
-          A simple, collaborative studio for storytellers and visual artists. Write anime stories, paste AI prompts, upload generated picture/video frames, and add dialogue captions to download.
+          We transform creative imagination into visual stories, one scene at a time. A collaborative two-user studio for Jiya and Sahil.
         </p>
 
         <!-- Big Primary Action Buttons -->
@@ -154,6 +160,10 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             <span>+ Create New Story</span>
           </button>
+          <a href="/download/AnimePlotStudio-Jiya.apk" download="AnimePlotStudio-Jiya.apk" class="btn btn-secondary btn-lg" style="font-size: 1.05rem; font-weight: 700; padding: 0.85rem 1.8rem; border-radius: 14px; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>📱 Download Jiya's App (APK)</span>
+          </a>
         </div>
 
         <!-- 1-Click Creator Profile Switcher Bar -->
@@ -162,41 +172,41 @@
           <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
             <button type="button" class="btn btn-sm btn-secondary active" id="cqs-btn-jiya" onclick="switchCurrentUser('jiya')" style="display: flex; align-items: center; gap: 0.5rem; border-radius: 10px; font-weight: 700; cursor: pointer;">
               <span>👑</span>
-              <span>Jiya (Story Writer)</span>
+              <span>Jiya – Founder</span>
             </button>
             <button type="button" class="btn btn-sm btn-secondary" id="cqs-btn-sahil" onclick="switchCurrentUser('sahil')" style="display: flex; align-items: center; gap: 0.5rem; border-radius: 10px; font-weight: 700; cursor: pointer;">
               <span>🎨</span>
-              <span>Sahil (Visual Producer)</span>
+              <span>Sahil – Manager</span>
             </button>
           </div>
         </div>
 
         <!-- 3-Step Simple Collaborative Workflow -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; text-align: left; max-width: 880px; margin: 0 auto;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; text-align: left; max-width: 900px; margin: 0 auto;">
           <div class="glass-panel" style="padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08);">
             <div style="font-size: 1.8rem; margin-bottom: 0.75rem;">✍️</div>
-            <div style="font-size: 0.75rem; font-weight: 800; color: #ec4899; text-transform: uppercase; margin-bottom: 0.25rem;">STEP 1 • STORY WRITER</div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">Make Story &amp; Scenes</h3>
+            <div style="font-size: 0.75rem; font-weight: 800; color: #ec4899; text-transform: uppercase; margin-bottom: 0.25rem;">JIYA • FOUNDER</div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">Story &amp; Scene Prompts</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-              Friend creates the story, adds parts (episodes), and pastes AI prompts for each scene.
+              Writes stories, creates parts/episodes, structures scenes, and crafts AI visual prompts.
             </p>
           </div>
 
           <div class="glass-panel" style="padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08);">
             <div style="font-size: 1.8rem; margin-bottom: 0.75rem;">📋</div>
-            <div style="font-size: 0.75rem; font-weight: 800; color: #818cf8; text-transform: uppercase; margin-bottom: 0.25rem;">STEP 2 • VISUAL PRODUCER</div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">Copy &amp; Upload Media</h3>
+            <div style="font-size: 0.75rem; font-weight: 800; color: #818cf8; text-transform: uppercase; margin-bottom: 0.25rem;">SAHIL • MANAGER</div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">AI Gen &amp; Media Upload</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-              1-tap Copy Prompt for Midjourney/Sora/Kling, generate picture or video clip, and upload right there.
+              Copies prompts in 1-tap, generates visuals with Midjourney/Kling/Sora, and uploads photos or video clips.
             </p>
           </div>
 
           <div class="glass-panel" style="padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08);">
-            <div style="font-size: 1.8rem; margin-bottom: 0.75rem;">💬</div>
-            <div style="font-size: 0.75rem; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 0.25rem;">STEP 3 • DIALOGUE &amp; EXPORT</div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">Add Dialogue &amp; Download</h3>
+            <div style="font-size: 1.8rem; margin-bottom: 0.75rem;">📖</div>
+            <div style="font-size: 0.75rem; font-weight: 800; color: #34d399; text-transform: uppercase; margin-bottom: 0.25rem;">SHARED WORKFLOW</div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.4rem; color: #fff;">Dialogues &amp; Book Preview</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-              Overlay anime subtitles or manga speech bubbles directly on the image and download high-res PNG.
+              Select characters (Akira, Yuna, Kuro), attach dialogues, submit scene, and preview complete illustrated storybook.
             </p>
           </div>
         </div>
@@ -432,10 +442,33 @@
 
     </div>
 
-    <!-- TAB 2: SCREENPLAY READER VIEW -->
+    <!-- TAB: CHARACTERS VIEW (SCREEN 7) -->
+    <div id="view-characters" style="display: none;">
+      <section class="section-container">
+        <div class="section-header-row" style="margin-bottom: 2rem;">
+          <div>
+            <div class="section-step-badge" style="background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3);">
+              CHARACTER LIBRARY • CAST &amp; BEHAVIOURS
+            </div>
+            <h2 class="section-title">Story Characters &amp; Roles</h2>
+            <p class="section-desc">Manage character photo, name, behaviour, description, and visual prompt tags used across your anime story.</p>
+          </div>
+          <button class="btn btn-primary" onclick="openCreateCharacterModal()" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            + Add Character
+          </button>
+        </div>
+
+        <div id="characters-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+          <!-- Rendered by renderCharactersView() in app.js -->
+        </div>
+      </section>
+    </div>
+
+    <!-- TAB 2: STORY BOOK PREVIEW (SCREEN 8) -->
     <div id="view-reader" style="display: none;">
       <div class="reader-container" id="reader-content">
-        <!-- Rendered Screenplay -->
+        <!-- Rendered by renderReaderView() in app.js using /api/book/project/:id -->
       </div>
     </div>
 
@@ -939,6 +972,96 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
     </div>
   </div>
 
+  <!-- Character Creation & Edit Modal (Screen 7) -->
+  <div class="modal-backdrop" id="new-character-modal">
+    <div class="modal-window" style="max-width: 600px;">
+      <div class="modal-header">
+        <div>
+          <div class="section-step-badge" style="background: rgba(236, 72, 153, 0.15); color: #f472b6;">CHARACTER ROSTER</div>
+          <h3 class="modal-title" id="character-modal-title">+ Add Story Character</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('new-character-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="new-character-form" onsubmit="event.preventDefault(); submitSaveCharacter();">
+          <input type="hidden" id="char-edit-id" value="">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Character Name *</label>
+              <input type="text" class="form-input" id="char-name-input" placeholder="e.g. Akira / Yuna / Kuro" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Japanese Name (Optional)</label>
+              <input type="text" class="form-input" id="char-jp-name-input" placeholder="e.g. アキラ">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Story Role *</label>
+            <input type="text" class="form-input" id="char-role-input" placeholder="e.g. Protagonist &amp; Sword Master / Shrine Maiden" required>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Behaviour / Personality *</label>
+            <input type="text" class="form-input" id="char-personality-input" placeholder="e.g. Brave, serious, loyal / Kind, intelligent, funny" required>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Appearance &amp; Visual Description</label>
+            <textarea class="form-textarea" id="char-appearance-input" rows="3" placeholder="e.g. Silver hair, sharp amber eyes, cyber-samurai robes with glowing katana..."></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Photo / Avatar Image URL (Optional)</label>
+            <input type="text" class="form-input" id="char-avatar-input" placeholder="/uploads/scenes/scene_library_discovery.jpg or paste image URL">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('new-character-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitSaveCharacter()">Save Character</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene Add Dialogue Modal (Screen 6) -->
+  <div class="modal-backdrop" id="scene-dialogue-modal">
+    <div class="modal-window" style="max-width: 580px;">
+      <div class="modal-header">
+        <div>
+          <div class="section-step-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">SCENE DIALOGUE</div>
+          <h3 class="modal-title">Attach Character Dialogue</h3>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal('scene-dialogue-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="scene-dialogue-form" onsubmit="event.preventDefault(); submitAddSceneDialogue();">
+          <input type="hidden" id="dialogue-target-scene-id" value="">
+          <div class="form-group">
+            <label class="form-label">Select Character / Speaker *</label>
+            <select class="form-select" id="dialogue-char-select" onchange="onDialogueCharacterChange(this.value)">
+              <!-- Populated by JavaScript with Akira, Yuna, Kuro, Narrator, or Custom -->
+            </select>
+          </div>
+
+          <div class="form-group" id="dialogue-custom-char-wrap" style="display: none; margin-top: 1rem;">
+            <label class="form-label">Custom Speaker Name</label>
+            <input type="text" class="form-input" id="dialogue-custom-char-name" placeholder="Type speaker name...">
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Dialogue Text *</label>
+            <textarea class="form-textarea" id="dialogue-content-text" rows="3" placeholder="Enter dialogue or subtitle line..." required></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('scene-dialogue-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAddSceneDialogue()">Save Dialogue to Scene</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 7. Lightbox Image Modal -->
   <div class="lightbox-backdrop" id="lightbox-modal" onclick="closeLightbox()">
     <div class="lightbox-img-wrap" onclick="event.stopPropagation()">
@@ -967,14 +1090,20 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
         <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
         <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/>
       </svg>
-      <span>Studio</span>
+      <span>My Story</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="characters" onclick="switchTab('characters')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>Characters</span>
     </button>
     <button class="mobile-nav-item" data-tab="reader" onclick="switchTab('reader')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
         <path d="M6 6h10"/><path d="M6 10h10"/>
       </svg>
-      <span>Reader</span>
+      <span>Book</span>
     </button>
 
     <!-- Central Floating Action Button (FAB) -->
@@ -983,8 +1112,6 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
     </button>
-
-    <button class="mobile-nav-item" data-tab="prompts" onclick="switchTab('prompts')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/>
         <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/>
