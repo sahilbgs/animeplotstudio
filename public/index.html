@@ -26,7 +26,7 @@
   <meta name="msapplication-TileImage" content="/assets/icon-192x192.png">
   <meta name="format-detection" content="telephone=no">
 
-  <link rel="stylesheet" href="/css/style.css?v=9">
+  <link rel="stylesheet" href="/css/style.css?v=11">
 </head>
 <body>
 
@@ -40,77 +40,55 @@
       </div>
     </div>
 
-    <!-- Center Navigation Tabs (Desktop) -->
+    <!-- Center Navigation Tabs -->
     <nav class="header-center">
-      <button class="nav-tab active" data-tab="landing" onclick="switchTab('landing')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Home
+      <button class="nav-tab active" data-tab="storyboard" onclick="switchTab('storyboard')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/></svg>
+        <span>🎬 Scenes Studio</span>
       </button>
-      <button class="nav-tab" data-tab="storyboard" onclick="switchTab('storyboard')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/><path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/></svg>
-        My Story
+      <button class="nav-tab" data-tab="landing" onclick="switchTab('landing')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span>📚 All Stories</span>
       </button>
       <button class="nav-tab" data-tab="characters" onclick="switchTab('characters')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Characters
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>👥 Characters</span>
       </button>
       <button class="nav-tab" data-tab="reader" onclick="switchTab('reader')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
-        Book Preview
-      </button>
-      <button class="nav-tab" data-tab="prompts" onclick="switchTab('prompts')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/></svg>
-        Prompts
+        <span>📖 Book Preview</span>
       </button>
     </nav>
 
-    <!-- Header Actions: Story Selector, + Create Story Button, Jiya APK, Collaborator Pill -->
+    <!-- Header Actions: User Toggle (Jiya / Sahil), Story Selector, APK, + Story -->
     <div class="header-actions">
-      <!-- Direct Native APK Download Link for Jiya -->
-      <a href="/download/AnimePlotStudio-Jiya.apk" download="AnimePlotStudio-Jiya.apk" class="btn btn-secondary btn-apk-download" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; border-radius: 12px; padding: 0.45rem 0.85rem; font-size: 0.82rem; text-decoration: none;" title="Download Jiya's Native Android App (APK)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        <span>📱 Jiya APK</span>
-      </a>
+      <!-- 1-Click Fast Creator Switcher (Jiya vs Sahil) -->
+      <div style="display: flex; gap: 4px; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 3px;">
+        <button type="button" id="header-role-jiya" onclick="switchUserDirect('jiya')" style="background: transparent; color: #f472b6; border: none; padding: 0.35rem 0.75rem; border-radius: 9px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; transition: all 0.2s ease;" title="Switch to Jiya (Founder: Writes Story &amp; Prompts)">
+          <span>👑</span> <span>Jiya</span> <span style="font-size: 0.7rem; opacity: 0.7;">(Founder)</span>
+        </button>
+        <button type="button" id="header-role-sahil" onclick="switchUserDirect('sahil')" style="background: #4f46e5; color: #ffffff; border: none; padding: 0.35rem 0.75rem; border-radius: 9px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; transition: all 0.2s ease;" title="Switch to Sahil (Manager: Copy Prompt &amp; Upload Images)">
+          <span>🎨</span> <span>Sahil</span> <span style="font-size: 0.7rem; opacity: 0.8;">(Manager)</span>
+        </button>
+      </div>
 
-      <!-- PWA Install Button -->
-      <button id="pwa-install-btn" class="btn btn-primary btn-pwa-install" onclick="installPWA()" title="Install Anime Plot Studio App" style="display: none;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        <span>Install App</span>
-      </button>
-
-      <!-- Story Selector in Header -->
-      <div class="header-story-selector-wrap" id="header-story-selector-wrap" title="Current Anime Story / Plot">
+      <!-- Story Selector Dropdown in Header -->
+      <div class="header-story-selector-wrap" id="header-story-selector-wrap" title="Current Anime Story">
         <select id="header-story-dropdown" class="header-story-dropdown" onchange="onHeaderStorySelect(this.value)">
           <!-- Populated by JavaScript -->
         </select>
       </div>
 
-      <!-- Prominent "+ Create Story" Button -->
-      <button class="btn btn-primary btn-create-story" id="header-create-story-btn" onclick="openCreateStoryModal()" title="Create New Anime Story (Step 1)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+      <!-- Direct Native APK Download Link -->
+      <a href="/download/AnimePlotStudio-Jiya.apk" download="AnimePlotStudio-Jiya.apk" class="btn btn-secondary btn-apk-download" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.4); color: #f472b6; border-radius: 12px; padding: 0.45rem 0.85rem; font-size: 0.82rem; text-decoration: none;" title="Download Native Android App (APK)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        <span>📱 Android APK</span>
+      </a>
+
+      <!-- + Create Story Button -->
+      <button class="btn btn-primary btn-create-story" id="header-create-story-btn" onclick="openCreateStoryModal()" title="Create New Anime Story">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span>+ Story</span>
-      </button>
-
-      <!-- Guest Login Button (Shown when not logged in) -->
-      <button id="header-login-btn" class="btn btn-primary" onclick="openModal('login-modal')" title="Creator Studio Access" style="display: none; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); font-weight: 700; border-radius: 12px; padding: 0.5rem 1rem;">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        <span>Studio Access</span>
-      </button>
-
-      <!-- Active Collaborator Switcher / Profile Pill -->
-      <div class="collaborator-pill" id="header-user-pill" onclick="openModal('switch-team-modal')" title="Creator Profile (Click to switch)">
-        <div class="collaborator-avatar" id="current-user-avatar">M</div>
-        <div>
-          <div class="collaborator-name" id="current-user-name">Mewo</div>
-          <div class="collaborator-role" id="current-user-role">Founder &amp; Main Director</div>
-        </div>
-      </div>
-
-      <!-- Logout Button -->
-      <button id="header-logout-btn" class="btn btn-secondary btn-sm" onclick="logoutUser()" title="Log out from Creator account" style="display: none; padding: 0.35rem 0.65rem;">
-        Logout
       </button>
     </div>
   </header>
@@ -262,6 +240,16 @@
               + Write New Scene Prompt
             </button>
           </div>
+        </div>
+
+        <!-- Story Parts Navigation Bar -->
+        <div style="margin-top: 1rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;" id="parts-nav-container">
+            <!-- Dynamically populated parts buttons: [ Part 1: The Beginning (3 Scenes) ] -->
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="openCreatePartModal()" style="border-radius: 10px; font-weight: 700; color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">
+            + Add New Part
+          </button>
         </div>
       </section>
 
@@ -647,17 +635,17 @@
     </div>
   </div>
 
-  <!-- 4. Simplified Scene Creator Modal: Single Text Box for Director Mewo -->
+  <!-- 4. Simplified Scene Creator Modal: For Jiya (Founder) -->
   <div class="modal-backdrop" id="scene-edit-modal">
-    <div class="modal-window" style="max-width: 680px;">
+    <div class="modal-window" style="max-width: 640px;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.75rem;">
           <div style="width: 40px; height: 40px; border-radius: 12px; background: #db2777; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
             👑
           </div>
           <div>
-            <h3 class="modal-title" id="scene-modal-heading">Add Scene (Seen)</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Director Mewo: Just paste your entire scene description &amp; prompts below</p>
+            <h3 class="modal-title" id="scene-modal-heading">Write Scene Prompt</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Jiya (Founder): Write your scene and AI image/video prompt</p>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeModal('scene-edit-modal')">&times;</button>
@@ -666,26 +654,37 @@
         <form id="scene-form" onsubmit="event.preventDefault(); submitSceneForm();">
           <input type="hidden" id="edit-scene-id">
 
-          <!-- Single All-in-One Scene Description & Prompts Box -->
-          <div class="form-group">
-            <label class="form-label" style="font-weight: 800; font-size: 0.95rem; color: #db2777; margin-bottom: 0.4rem;">
-              Paste Entire Scene Description &amp; Visual Prompts
+          <!-- Scene Title -->
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.9rem; color: #fff; margin-bottom: 0.35rem;">
+              Scene Title
             </label>
-            <textarea class="form-textarea" id="scene-unified-input" rows="8" placeholder="Paste everything here (story action, dialogue, setting, and AI visual prompts)...
+            <input type="text" class="form-input" id="scene-title-input" placeholder="e.g. Scene 1: Midnight Archive Discovery" style="border-radius: 10px; font-size: 0.95rem; padding: 0.75rem 1rem;">
+          </div>
 
-Example:
-Heavy rain falls over Shibuya crossing as Ren confronts Kaoru. Lightning strikes in the background.
-Kaoru: 'You cannot rewrite destiny.'
-Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning storm, cyber samurai with glowing katana, Makoto Shinkai lighting, Ufotable action, 8k resolution" style="font-size: 0.95rem; line-height: 1.6; min-height: 190px; border-radius: 14px; border: 2px solid rgba(219, 39, 119, 0.25);"></textarea>
-            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); margin-top: 0.5rem;">
-              <span>⚡</span> <span>Bunny (Producer) can copy this visual prompt with 1 tap to render high-resolution scene stills.</span>
+          <!-- AI Visual Prompt -->
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label" style="font-weight: 800; font-size: 0.95rem; color: #38bdf8; margin-bottom: 0.35rem;">
+              ✍️ AI Visual Prompt (For Midjourney / Sora / Kling)
+            </label>
+            <textarea class="form-textarea" id="scene-unified-input" rows="5" placeholder="masterpiece anime visual, gothic academy library, towering bookshelves, glowing ancient manuscript radiating golden light, two students in awe, Makoto Shinkai lighting, Ufotable detailed composition, 8k --ar 16:9" style="font-size: 0.95rem; line-height: 1.6; min-height: 130px; border-radius: 12px; border: 1.5px solid rgba(56, 189, 248, 0.3); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;"></textarea>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.4rem;">
+              ⚡ Sahil can copy this prompt in 1-tap to generate the artwork.
             </div>
+          </div>
+
+          <!-- Optional Narrative / Dialogue Line -->
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" style="font-weight: 700; font-size: 0.85rem; color: #f472b6; margin-bottom: 0.35rem;">
+              💬 Character Dialogue (Optional)
+            </label>
+            <input type="text" class="form-input" id="scene-dialogue-input" placeholder="e.g. AKIRA: The chronicle is alive... look at the script glowing." style="border-radius: 10px; font-size: 0.9rem; padding: 0.65rem 1rem;">
           </div>
         </form>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
         <button type="button" class="btn btn-secondary" onclick="closeModal('scene-edit-modal')">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="submitSceneForm()" style="font-weight: 800; font-size: 1rem; padding: 0.75rem 2rem; border-radius: 12px; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(219, 39, 119, 0.35);">
+        <button type="button" class="btn btn-primary" onclick="submitSceneForm()" style="font-weight: 800; font-size: 0.95rem; padding: 0.75rem 1.8rem; border-radius: 12px; background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); box-shadow: 0 4px 14px rgba(219, 39, 119, 0.35);">
           Save Scene ✓
         </button>
       </div>
@@ -909,32 +908,19 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
 
   <!-- Mobile Bottom Native Navigation Bar -->
   <nav class="mobile-bottom-nav">
-    <button class="mobile-nav-item active" data-tab="landing" onclick="switchTab('landing')">
+    <button class="mobile-nav-item active" data-tab="storyboard" onclick="switchTab('storyboard')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
+        <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/>
+      </svg>
+      <span>Scenes</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="landing" onclick="switchTab('landing')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
         <polyline points="9 22 9 12 15 12 15 22"/>
       </svg>
-      <span>Home</span>
-    </button>
-    <button class="mobile-nav-item" data-tab="storyboard" onclick="switchTab('storyboard')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
-        <path d="M7 2v20"/><path d="M17 2v20"/><path d="M2 12h20"/><path d="M2 7h5"/><path d="M2 17h5"/><path d="M17 17h5"/><path d="M17 7h5"/>
-      </svg>
-      <span>My Story</span>
-    </button>
-    <button class="mobile-nav-item" data-tab="characters" onclick="switchTab('characters')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-      <span>Characters</span>
-    </button>
-    <button class="mobile-nav-item" data-tab="reader" onclick="switchTab('reader')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-        <path d="M6 6h10"/><path d="M6 10h10"/>
-      </svg>
-      <span>Book</span>
+      <span>Stories</span>
     </button>
 
     <!-- Central Floating Action Button (FAB) -->
@@ -943,11 +929,19 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
     </button>
+
+    <button class="mobile-nav-item" data-tab="characters" onclick="switchTab('characters')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/>
-        <path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/>
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
-      <span>Visuals</span>
+      <span>Cast</span>
+    </button>
+    <button class="mobile-nav-item" data-tab="reader" onclick="switchTab('reader')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+        <path d="M6 6h10"/><path d="M6 10h10"/>
+      </svg>
+      <span>Reader</span>
     </button>
   </nav>
 
@@ -1125,7 +1119,7 @@ Prompt: masterpiece, anime still, Shibuya crossing in midnight rain, lightning s
   <!-- Scripts -->
   <script src="/js/api.js?v=8"></script>
   <script src="/js/components.js?v=8"></script>
-  <script src="/js/app.js?v=8"></script>
+  <script src="/js/app.js?v=11"></script>
 
   <script>
     // Hook up switch team modal population

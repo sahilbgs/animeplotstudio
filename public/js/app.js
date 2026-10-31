@@ -33,19 +33,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   initPWA();
   await loadInitialData();
 
-  // If visitor is not logged in, always show public landing showcase
-  if (!state.isLoggedIn) {
-    switchTab('landing');
+  // Default directly to storyboard (Scenes Studio) so creators enter workspace immediately
+  const hash = window.location.hash.replace('#', '');
+  if (['storyboard', 'landing', 'characters', 'reader'].includes(hash)) {
+    switchTab(hash);
   } else {
-    // If logged in, check URL hash or stay on storyboard/landing
-    const hash = window.location.hash.replace('#', '');
-    if (['landing', 'storyboard', 'reader', 'prompts', 'team'].includes(hash)) {
-      switchTab(hash);
-    } else {
-      switchTab('storyboard');
-    }
+    switchTab('storyboard');
   }
 });
+
+// Direct fast switch between Jiya (Founder) and Sahil (Manager)
+function switchUserDirect(username) {
+  if (username === 'jiya') {
+    state.currentUser = {
+      id: 4,
+      username: 'jiya',
+      display_name: 'Jiya',
+      role: 'Founder',
+      avatar_color: '#db2777',
+      avatar_emoji: '👑'
+    };
+  } else {
+    state.currentUser = {
+      id: 5,
+      username: 'sahil',
+      display_name: 'Sahil',
+      role: 'Manager',
+      avatar_color: '#4f46e5',
+      avatar_emoji: '🎨'
+    };
+  }
+  state.isLoggedIn = true;
+  localStorage.setItem('anime_plot_auth', JSON.stringify({
+    token: 'tok_' + username + '_web',
+    user: state.currentUser,
+    logged_in_at: new Date().toISOString()
+  }));
+  updateAuthUI();
+  showToast(`Switched active creator: ${state.currentUser.display_name} (${state.currentUser.role})`, 'success');
+}
 
 // Check persistent authentication session (localStorage / sessionStorage)
 function checkAuthSession() {
@@ -62,19 +88,11 @@ function checkAuthSession() {
     }
   }
   if (!state.currentUser) {
-    const legacyUser = localStorage.getItem('anime_studio_user');
-    if (legacyUser) {
-      try {
-        state.currentUser = JSON.parse(legacyUser);
-      } catch (e) {}
-    }
-  }
-  if (!state.currentUser) {
     state.currentUser = {
-      id: 1,
+      id: 5,
       username: 'sahil',
       display_name: 'Sahil',
-      role: 'Visual Producer & AI Artist',
+      role: 'Manager',
       avatar_color: '#4f46e5',
       avatar_emoji: '🎨'
     };
@@ -84,29 +102,25 @@ function checkAuthSession() {
 }
 
 function updateAuthUI() {
-  const loginBtn = document.getElementById('header-login-btn');
-  const userPill = document.getElementById('header-user-pill');
-  const logoutBtn = document.getElementById('header-logout-btn');
+  const btnJiya = document.getElementById('header-role-jiya');
+  const btnSahil = document.getElementById('header-role-sahil');
+  const isJiya = state.currentUser && state.currentUser.username === 'jiya';
+
+  if (btnJiya) {
+    btnJiya.style.background = isJiya ? '#db2777' : 'transparent';
+    btnJiya.style.color = isJiya ? '#ffffff' : '#f472b6';
+    btnJiya.style.boxShadow = isJiya ? '0 0 12px rgba(219, 39, 119, 0.45)' : 'none';
+  }
+  if (btnSahil) {
+    btnSahil.style.background = !isJiya ? '#4f46e5' : 'transparent';
+    btnSahil.style.color = !isJiya ? '#ffffff' : '#818cf8';
+    btnSahil.style.boxShadow = !isJiya ? '0 0 12px rgba(79, 70, 229, 0.45)' : 'none';
+  }
+
   const storySelector = document.getElementById('header-story-selector-wrap');
   const createStoryBtn = document.getElementById('header-create-story-btn');
-  const landingCtaText = document.getElementById('landing-main-cta-text');
-
-  if (state.isLoggedIn && state.currentUser) {
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (userPill) userPill.style.display = 'flex';
-    if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-    if (storySelector) storySelector.style.display = 'flex';
-    if (createStoryBtn) createStoryBtn.style.display = 'inline-flex';
-    if (landingCtaText) landingCtaText.textContent = `Enter Studio Workspace (${state.currentUser.display_name})`;
-    updateUserHeaderDisplay();
-  } else {
-    if (loginBtn) loginBtn.style.display = 'inline-flex';
-    if (userPill) userPill.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    if (storySelector) storySelector.style.display = 'none';
-    if (createStoryBtn) createStoryBtn.style.display = 'none';
-    if (landingCtaText) landingCtaText.textContent = 'Enter Studio Workspace (Creator Login)';
-  }
+  if (storySelector) storySelector.style.display = 'flex';
+  if (createStoryBtn) createStoryBtn.style.display = 'inline-flex';
 }
 
 function updateUserHeaderDisplay() {
@@ -161,6 +175,9 @@ async function selectProject(projectId) {
     state.characters = data.characters || [];
     state.parts = data.parts || [];
     localStorage.setItem('anime_studio_active_project', projectId);
+
+    const wst = document.getElementById('workspace-story-title');
+    if (wst) wst.textContent = data.project.title;
 
     // Update matching entry in state.projects
     const pIndex = state.projects.findIndex(p => p.id === projectId);
@@ -611,49 +628,68 @@ function renderEmptyProjectState() {
   updateStepper();
 }
 
-// Render Parts Carousel (Part 1, Part 2, Part 3...)
+// Render Parts Navigation Bar (Part 1, Part 2, Part 3...)
 function renderPartsBar() {
+  const navContainer = document.getElementById('parts-nav-container');
+  if (navContainer) {
+    navContainer.innerHTML = '';
+    if (!state.parts || state.parts.length === 0) {
+      navContainer.innerHTML = '<span style="color: #94a3b8; font-size: 0.85rem;">No parts created yet. Click "+ Add New Part" to create Part 1.</span>';
+    } else {
+      state.parts.forEach(part => {
+        const isSelected = state.activePart && state.activePart.id === part.id;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `btn btn-sm ${isSelected ? 'btn-primary' : 'btn-secondary'}`;
+        btn.style.cssText = `border-radius: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.2s ease; ${isSelected ? 'background: linear-gradient(135deg, #db2777 0%, #4f46e5 100%); color: #fff; box-shadow: 0 4px 14px rgba(219, 39, 119, 0.4); border: none;' : 'background: rgba(255,255,255,0.06); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1);'}`;
+        btn.innerHTML = `<span>📖</span><span>Part ${part.part_number}: ${escapeHtml(part.title)}</span> <span style="font-size: 0.72rem; opacity: 0.85; background: rgba(0,0,0,0.3); padding: 2px 7px; border-radius: 6px;">${part.scene_count || 0} scenes</span>`;
+        btn.onclick = () => selectPart(part.id);
+        navContainer.appendChild(btn);
+      });
+    }
+  }
+
   const container = document.getElementById('parts-carousel');
-  if (!container) return;
-  container.innerHTML = '';
+  if (container) {
+    container.innerHTML = '';
+    state.parts.forEach(part => {
+      const isSelected = state.activePart && state.activePart.id === part.id;
+      const card = document.createElement('div');
+      card.className = `part-card ${isSelected ? 'active-part' : ''}`;
+      card.onclick = () => selectPart(part.id);
 
-  state.parts.forEach(part => {
-    const isSelected = state.activePart && state.activePart.id === part.id;
-    const card = document.createElement('div');
-    card.className = `part-card ${isSelected ? 'active-part' : ''}`;
-    card.onclick = () => selectPart(part.id);
+      const coverUrl = part.cover_image || '/uploads/parts/part1_shibuya_cover.svg';
 
-    const coverUrl = part.cover_image || '/uploads/parts/part1_shibuya_cover.svg';
-
-    card.innerHTML = `
-      <div class="part-cover-wrap">
-        <img src="${coverUrl}" class="part-cover-img" alt="${part.title}" onerror="this.src='/uploads/parts/part1_shibuya_cover.svg'">
-        <div class="part-badge-tag">PART ${part.part_number}</div>
-      </div>
-      <div class="part-card-body">
-        <div class="part-card-title">${part.title}</div>
-        <div class="part-card-summary">${part.summary || 'No summary specified yet.'}</div>
-        <div class="part-card-footer">
-          <span>${part.scene_count || 0} Scenes</span>
-          <button class="part-upload-btn" onclick="openPartUploadModal(event, ${part.id})">
-            ${ICONS.upload} Upload Cover
-          </button>
+      card.innerHTML = `
+        <div class="part-cover-wrap">
+          <img src="${coverUrl}" class="part-cover-img" alt="${part.title}" onerror="this.src='/uploads/parts/part1_shibuya_cover.svg'">
+          <div class="part-badge-tag">PART ${part.part_number}</div>
         </div>
-      </div>
-    `;
-    container.appendChild(card);
-  });
+        <div class="part-card-body">
+          <div class="part-card-title">${part.title}</div>
+          <div class="part-card-summary">${part.summary || 'No summary specified yet.'}</div>
+          <div class="part-card-footer">
+            <span>${part.scene_count || 0} Scenes</span>
+            <button class="part-upload-btn" onclick="openPartUploadModal(event, ${part.id})">
+              ${ICONS.upload} Upload Cover
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
 
-  // Add "+ New Part" Card
-  const addBtn = document.createElement('div');
-  addBtn.className = 'add-part-card';
-  addBtn.onclick = () => openModal('new-part-modal');
-  addBtn.innerHTML = `
-    <div class="add-part-icon">${ICONS.plus}</div>
-    <div style="font-weight: 700; font-size: 0.9rem;">Add Next Part</div>
-    <div style="font-size: 0.75rem;">Part ${state.parts.length + 1}</div>
-  `;
-  container.appendChild(addBtn);
+    // Add "+ New Part" Card
+    const addBtn = document.createElement('div');
+    addBtn.className = 'add-part-card';
+    addBtn.onclick = () => openCreatePartModal();
+    addBtn.innerHTML = `
+      <div class="add-part-icon">${ICONS.plus}</div>
+      <div style="font-weight: 700; font-size: 0.9rem;">Add Next Part</div>
+      <div style="font-size: 0.75rem;">Part ${state.parts.length + 1}</div>
+    `;
+    container.appendChild(addBtn);
+  }
 }
 
 // Render Scenes Grid (Storyboard View)
@@ -857,14 +893,29 @@ async function handleSceneDirectFileInput(sceneId, inputElement) {
     showToast('✨ Image uploaded successfully! Scene updated.', 'success');
     // Reload scenes for active part
     if (state.activePart) {
-      await loadPartScenes(state.activePart.id);
+      await selectPart(state.activePart.id);
     } else {
-      await loadPartScenes(4);
+      await selectPart(4);
     }
   } catch (err) {
     showToast('Upload failed: ' + err.message, 'error');
   } finally {
     inputElement.value = '';
+  }
+}
+
+// 1-Click Refresh Scenes from Server
+async function reloadCurrentScenes() {
+  showToast('Refreshing scenes from server...', 'info');
+  try {
+    if (state.activePart) {
+      await selectPart(state.activePart.id);
+    } else if (state.activeProject) {
+      await selectProject(state.activeProject.id);
+    }
+    showToast('Scenes updated from server!', 'success');
+  } catch (err) {
+    showToast('Refresh error: ' + err.message, 'error');
   }
 }
 
@@ -1621,7 +1672,7 @@ async function submitNewPart() {
 // STEP 3: SIMPLE SCENE CREATION & EDITING (DIRECTOR MEWO & MANAGER BUNNY)
 // ==============================================================================
 
-// Open Create Scene Modal (Single Text Box for Director Mewo)
+// Open Create Scene Prompt Modal (For Jiya / Founder)
 function openCreateSceneModal() {
   if (!state.activePart) {
     showToast('Please select or create a Part first', 'info');
@@ -1631,13 +1682,19 @@ function openCreateSceneModal() {
   const nextSceneNum = state.scenes ? state.scenes.length + 1 : 1;
 
   const heading = document.getElementById('scene-modal-heading');
-  if (heading) heading.textContent = `Add Scene ${nextSceneNum} to Part ${partNum}`;
+  if (heading) heading.textContent = `Write Scene ${nextSceneNum} Prompt (Part ${partNum})`;
 
   const editIdInp = document.getElementById('edit-scene-id');
   if (editIdInp) editIdInp.value = '';
 
-  const unifiedInp = document.getElementById('scene-unified-input');
-  if (unifiedInp) unifiedInp.value = '';
+  const titleInp = document.getElementById('scene-title-input');
+  if (titleInp) titleInp.value = `Scene ${nextSceneNum}: `;
+
+  const promptInp = document.getElementById('scene-unified-input');
+  if (promptInp) promptInp.value = '';
+
+  const diagInp = document.getElementById('scene-dialogue-input');
+  if (diagInp) diagInp.value = '';
 
   openModal('scene-edit-modal');
 }
@@ -1648,53 +1705,33 @@ function openEditSceneModal(sceneId) {
   if (!scene) return;
 
   const heading = document.getElementById('scene-modal-heading');
-  if (heading) heading.textContent = `Edit Scene ${scene.scene_number}`;
+  if (heading) heading.textContent = `Edit Scene ${scene.scene_number} Prompt`;
 
   const editIdInp = document.getElementById('edit-scene-id');
   if (editIdInp) editIdInp.value = scene.id;
 
-  const unifiedInp = document.getElementById('scene-unified-input');
-  if (unifiedInp) {
-    let combined = '';
-    if (scene.narrative_script) combined += scene.narrative_script + '\n\n';
-    if (scene.visual_prompt && !combined.includes(scene.visual_prompt)) {
-      combined += 'Prompt: ' + scene.visual_prompt;
-    }
-    unifiedInp.value = combined.trim() || scene.visual_prompt || '';
-  }
+  const titleInp = document.getElementById('scene-title-input');
+  if (titleInp) titleInp.value = scene.title || '';
+
+  const promptInp = document.getElementById('scene-unified-input');
+  if (promptInp) promptInp.value = scene.visual_prompt || scene.narrative_script || '';
+
+  const diagInp = document.getElementById('scene-dialogue-input');
+  if (diagInp) diagInp.value = scene.dialogue || '';
 
   openModal('scene-edit-modal');
 }
 
-// Submit Scene Form (Pure Single Textbox for Director Mewo)
+// Submit Scene Form (Jiya writes prompts, Sahil copies & renders)
 async function submitSceneForm() {
   const sceneId = document.getElementById('edit-scene-id')?.value || '';
-  const unified = document.getElementById('scene-unified-input')?.value?.trim() || '';
+  let title = (document.getElementById('scene-title-input')?.value || '').trim();
+  const prompt = (document.getElementById('scene-unified-input')?.value || '').trim();
+  const dialogue = (document.getElementById('scene-dialogue-input')?.value || '').trim();
 
-  if (!unified) {
-    showToast('Please paste your scene description and prompts first!', 'error');
+  if (!prompt) {
+    showToast('Please enter the visual prompt for this scene!', 'error');
     return;
-  }
-
-  // Parse prompt and description from unified input
-  let prompt = unified;
-  let script = unified;
-  let title = '';
-
-  // Check if there is an explicit "Prompt: ..."
-  const promptMatch = unified.match(/(?:prompt|visual\s*prompt|midjourney|sd)[:\-]\s*([^\n\r]+(?:[\n\r]+[^\n\r]+)*)/i);
-  if (promptMatch && promptMatch[1]) {
-    prompt = promptMatch[1].trim();
-    const splitIndex = unified.toLowerCase().indexOf(promptMatch[0].toLowerCase());
-    if (splitIndex > 0) {
-      script = unified.substring(0, splitIndex).trim();
-    }
-  }
-
-  // Detect title from first line if short
-  const lines = unified.split('\n').map(l => l.trim()).filter(Boolean);
-  if (lines.length > 0 && lines[0].length < 60 && !/^(prompt|visual)/i.test(lines[0])) {
-    title = lines[0].replace(/^(scene\s*\d*[:\-]?\s*)/i, 'Scene: ');
   }
 
   const nextSceneNum = state.scenes ? state.scenes.length + 1 : 1;
@@ -1702,29 +1739,30 @@ async function submitSceneForm() {
     title = `Scene ${nextSceneNum}: Visual Beat`;
   }
 
+  const creator = (state.currentUser && (state.currentUser.display_name || state.currentUser.username)) || 'Jiya';
+
   const payload = {
     title: title,
-    location: 'Neo-Tokyo Shibuya',
-    time_of_day: 'Midnight Rain',
-    mood: 'Cinematic Anime Action',
+    location: 'Anime Story Scene',
+    time_of_day: 'Cinematic',
+    mood: 'Dramatic Anime',
     camera_angle: 'Medium Shot',
     visual_prompt: prompt,
     negative_prompt: 'low quality, blurry, deformed hands, extra limbs, bad anatomy',
-    narrative_script: script,
-    dialogue: '',
+    narrative_script: prompt,
+    dialogue: dialogue,
     status: 'Prompt Ready',
-    created_by: state.currentUser ? state.currentUser.display_name : 'Director Mewo'
+    created_by: creator
   };
 
   try {
     if (sceneId) {
       await API.updateScene(sceneId, payload);
-      showToast('Scene updated in studio!', 'success');
+      showToast(`Scene "${title}" updated successfully!`, 'success');
     } else {
       await API.createScene(state.activePart.id, payload);
-      showToast('New Scene added! Ready for Bunny to copy prompt & generate art.', 'success');
+      showToast(`Scene "${title}" created! Prompt ready for Sahil.`, 'success');
     }
-
     closeModal('scene-edit-modal');
     await selectPart(state.activePart.id);
   } catch (err) {
@@ -1797,10 +1835,10 @@ function switchTab(tabName) {
   state.isLoggedIn = true;
   if (!state.currentUser) {
     state.currentUser = {
-      id: 1,
+      id: 5,
       username: 'sahil',
       display_name: 'Sahil',
-      role: 'Visual Producer & AI Artist',
+      role: 'Manager',
       avatar_color: '#4f46e5',
       avatar_emoji: '🎨'
     };
